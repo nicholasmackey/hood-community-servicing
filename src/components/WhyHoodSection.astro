@@ -1,0 +1,65 @@
+---
+import ImagePlaceholder from './ImagePlaceholder.astro';
+
+const attributes = [
+  {
+    title: 'Reliable',
+    body: 'Shifts are covered, and when something changes we handle it before it reaches you.',
+  },
+  {
+    title: 'Trusted',
+    body: 'Boards and managers hand us the work and stop having to check on it.',
+  },
+  {
+    title: 'Community focused',
+    body: 'We serve the neighborhoods we live and work in, and we treat them that way.',
+  },
+  {
+    title: 'Professional',
+    body: 'Trained, certified, in uniform, and accountable for how every site is run.',
+  },
+  {
+    title: 'Proud',
+    body: 'Our name is on the work, so the standard it holds is ours to set.',
+  },
+];
+---
+
+<section id="why-hood" class="section border-b border-border">
+  <div class="container-page">
+    <div class="grid gap-x-16 gap-y-12 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <div class="lg:sticky lg:top-32">
+          <span class="eyebrow">Why HOOD</span>
+
+          <h2
+            class="mt-5 max-w-[16ch] text-[32px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[40px] lg:text-[48px]"
+          >
+            Professional where it matters. Personal where it counts.
+          </h2>
+
+          <ImagePlaceholder
+            label="Staff detail"
+            src="/images/staff-detail.webp"
+            class="mt-10 hidden aspect-[4/5] lg:flex"
+          />
+        </div>
+      </div>
+
+      <dl class="lg:col-span-7">
+        {
+          attributes.map((attribute) => (
+            <div class="border-t border-border py-6 first:border-t-0 first:pt-0 lg:py-8">
+              <dt class="text-[22px] font-bold tracking-[-0.02em] lg:text-[26px]">
+                {attribute.title}
+              </dt>
+              <dd class="mt-2 max-w-[52ch] text-[17px] leading-[1.6] text-muted lg:text-[18px]">
+                {attribute.body}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>

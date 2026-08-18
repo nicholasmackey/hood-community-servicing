@@ -1,0 +1,245 @@
+---
+import Logo from './Logo.astro';
+
+/**
+ * First-load intro: 12 red columns slide in left to right and close up into an
+ * unbroken red wall behind the reverse logo, then the whole wall swipes off to
+ * the right as one piece, revealing the page.
+ *
+ * The columns exist only on the way IN. Each is its own `overflow: hidden`
+ * track with the red panel sliding INSIDE it, so a panel is never visible
+ * outside its own slot: each panel covers its track from the left, and the
+ * not-yet-covered remainder separates the columns while they move. On a single
+ * shared plane the panels instead travel across one another and the whole
+ * thing reads as one wall sliding sideways.
+ *
+ * The exit does NOT unwind the columns. Twelve 1fr columns land on fractional
+ * pixel widths at most viewport sizes (a 393px phone gives 32.75px cells), and
+ * twelve independently composited panels cannot be relied on to meet exactly on
+ * those boundaries — staggering them back out reopened the seams as hairline
+ * streaks every time. So once the wall is complete it moves as a single unit:
+ * the transform is on the overlay itself, the panels hold still relative to
+ * each other, and the logo rides off with the red it sits on.
+ *
+ * Two things keep the standing wall solid, since a seam is invisible only if
+ * nothing can show through it. The tracks each hang a pixel over the column
+ * before them, covering their shared boundary from the near side; and the grid
+ * behind them turns red the moment the last panel lands, so even a seam that
+ * does open has red rather than backdrop behind it. Both are only reachable
+ * while the wall is whole, which is now the only time the wall is on screen.
+ *
+ * The overlay is opaque white on the way in, so the page is never half-visible
+ * through the gaps between the incoming panels — text flashing past faster
+ * than it can be read is more distracting than a blank screen. The white drops
+ * out mid-hold, while the wall is solid red and nothing can show, so the swipe
+ * still uncovers the real page.
+ *
+ * Timeline, in milliseconds from the first panel starting:
+ *     0 –  605  panels launch, 55ms apart, over white
+ *   605 – 1085  last panel slides home (each travels 480ms)
+ *  1085        grid behind the panels turns red — under the finished wall
+ *  1085 – 1385  logo fades + scales in
+ *  1385 – 2385  finished screen holds (1s)
+ *  2200        white drops behind the solid wall — invisible, mid-hold
+ *  2385 – 2765  the whole overlay swipes right, revealing the page
+ */
+const COLUMNS = 12;
+---
+
+<div id="intro-reveal" class="intro" aria-hidden="true" data-duration="2765">
+  <div class="intro__tracks">
+    {
+      Array.from({ length: COLUMNS }, (_, i) => (
+        <div class="intro__track" style={`--i:${i}`}>
+          <span class="intro__panel" />
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="intro__logo">
+    <Logo variant="reverse" alt="" class="" />
+  </div>
+</div>
+
+<style>
+  /* Hidden until the inline script opts in, so the overlay never flashes on
+     repeat views, with reduced motion, or when JS is unavailable. */
+  .intro {
+    display: none;
+  }
+
+  .intro[data-state='playing'] {
+    display: block;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 9999;
+    /* Contains the first track's 1px overhang past the left edge, and the
+       overlay itself once it swipes past the right. */
+    overflow: hidden;
+    /* White base, so the page cannot show through the gaps between panels even
+       if the animation below never runs. steps(1, end) then holds that white
+       for the full 2200ms and swaps to transparent in a single frame — under
+       the finished wall, mid-hold, so the swap itself is never seen and the
+       swipe uncovers the page. */
+    background-color: var(--color-surface);
+    will-change: transform;
+    animation:
+      intro-backdrop 2200ms steps(1, end) both,
+      intro-exit 380ms cubic-bezier(0.55, 0, 1, 0.45) 2385ms both;
+  }
+
+  .intro__tracks {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    height: 100%;
+  }
+
+  /* Clips its panel to this column — see the note at the top of the file. Each
+     track is a pixel wider than its grid cell and hangs that pixel over the
+     column before it, covering the fractional boundary the two share. It hangs
+     backwards rather than forwards because the panels arrive from the left:
+     the overhang is only ever red once its own panel is home, by which time
+     the column underneath it landed 55ms earlier, so it never reaches into a
+     gap that is still showing white. */
+  .intro__track {
+    overflow: hidden;
+    width: calc(100% + 1px);
+    margin-left: -1px;
+  }
+
+  .intro__panel {
+    display: block;
+    height: 100%;
+    background-color: var(--color-brand-red);
+    transform: translateX(-100%);
+    will-change: transform;
+  }
+
+  .intro__logo {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding-inline: var(--gutter);
+    opacity: 0;
+  }
+
+  /* The logo renders inside the Logo component, so it needs :global to match. */
+  .intro__logo :global(img) {
+    width: min(340px, 62vw);
+    height: auto;
+  }
+
+  /* Double the logo from tablet up; the vw cap keeps it inside the gutters. */
+  @media (min-width: 768px) {
+    .intro__logo :global(img) {
+      width: min(680px, 62vw);
+    }
+  }
+
+  /* Transparent while the columns are arriving, so the white backdrop shows
+     between them; solid red from the frame the last panel lands, so from then
+     on no seam between the panels can show anything through. */
+  .intro[data-state='playing'] .intro__tracks {
+    animation: intro-wall 1085ms steps(1, end) both;
+  }
+
+  .intro[data-state='playing'] .intro__panel {
+    animation: intro-panel 480ms cubic-bezier(0.33, 0, 0.12, 1) calc(var(--i) * 55ms) both;
+  }
+
+  .intro[data-state='playing'] .intro__logo {
+    animation: intro-logo 300ms cubic-bezier(0.22, 1, 0.36, 1) 1085ms both;
+  }
+
+  @keyframes intro-backdrop {
+    from {
+      background-color: var(--color-surface);
+    }
+    to {
+      background-color: transparent;
+    }
+  }
+
+  @keyframes intro-wall {
+    from {
+      background-color: transparent;
+    }
+    to {
+      background-color: var(--color-brand-red);
+    }
+  }
+
+  @keyframes intro-panel {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes intro-logo {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes intro-exit {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .intro {
+      display: none !important;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const intro = document.getElementById('intro-reveal');
+    if (!intro) return;
+
+    const remove = () => intro.remove();
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      remove();
+      return;
+    }
+
+    // Once per browser session. Storage can throw in private/blocked contexts,
+    // in which case we just play the intro.
+    try {
+      if (sessionStorage.getItem('hood:intro') === '1') {
+        remove();
+        return;
+      }
+      sessionStorage.setItem('hood:intro', '1');
+    } catch {}
+
+    intro.dataset.state = 'playing';
+
+    // The overlay runs the backdrop swap and the swipe, so wait for the swipe
+    // by name; the timeout is a backstop so the overlay can never outlive the
+    // animation and swallow clicks.
+    intro.addEventListener('animationend', (event) => {
+      if (event.animationName === 'intro-exit') remove();
+    });
+    setTimeout(remove, Number(intro.dataset.duration) + 800);
+  })();
+</script>

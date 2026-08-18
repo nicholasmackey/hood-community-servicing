@@ -1,0 +1,512 @@
+---
+import Logo from './Logo.astro';
+
+const nav = [
+  {
+    label: 'Services',
+    href: '#services',
+    note: 'Lifeguard staffing, pool management, and community support.',
+  },
+  {
+    label: 'Why HOOD',
+    href: '#why-hood',
+    note: 'Professional where it matters. Personal where it counts.',
+  },
+  {
+    label: 'Contact',
+    href: '#contact',
+    note: 'Tell us what your community needs.',
+  },
+];
+
+// TODO: replace with real HOOD contact details (same placeholders as Footer.astro).
+const contact = {
+  phone: '(000) 000-0000',
+  phoneHref: 'tel:+10000000000',
+  email: 'email@placeholder.com',
+};
+---
+
+{/*
+  The panel below is a sibling of <header>, not a child, and has to stay one:
+  the header is `sticky`, which makes it the containing block for fixed
+  descendants — a fixed panel inside it would be laid out against the 72px bar
+  instead of the viewport. It lives in this file anyway, because the toggle and
+  the panel are one control.
+*/}
+<header class="site-header sticky top-0 z-50 border-b border-border bg-background">
+  <div class="container-page flex h-[72px] items-center justify-between gap-6 lg:h-20">
+    {/*
+      Both lockups are stacked in one grid cell and cross-faded, because the
+      mark is an <img> rather than inline SVG and so cannot inherit a colour.
+      The reverse copy is what keeps the wordmark legible once the ink panel is
+      up behind the bar.
+    */}
+    <a href="/" class="brand-link shrink-0" aria-label="HOOD Community Servicing — home">
+      <span class="brand-swap grid">
+        <Logo class="brand-primary h-8 w-auto lg:h-9" alt="" />
+        <Logo variant="reverse" class="brand-reverse h-8 w-auto lg:h-9" alt="" />
+      </span>
+    </a>
+
+    <nav aria-label="Primary" class="flex items-center gap-8">
+      <ul class="hidden items-center gap-8 md:flex">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="text-[15px] font-medium text-ink transition-colors hover:text-brand-red"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      {/*
+        The call to action is the desktop control. On a phone it was the only
+        thing in the bar, which left every section of a long single-page site
+        reachable by scrolling alone — so below md it becomes the menu, and
+        contact is the last row in it.
+      */}
+      <a href="#contact" class="btn btn-sm btn-primary hidden md:inline-flex">Talk to HOOD</a>
+
+      {/* -mr-3 pulls the 48px tap target's padding back so the bars line up
+          with the page gutter rather than sitting inside it. */}
+      <button
+        type="button"
+        id="menu-toggle"
+        class="menu-toggle -mr-3 shrink-0"
+        aria-controls="site-menu"
+        aria-expanded="false"
+      >
+        <span class="sr-only">Menu</span>
+
+        <span class="bars" aria-hidden="true">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+{/*
+  The menu. Ink, like the contact panel it ends on, and it opens as an index
+  rather than a list of links: rule, name, and the line saying what is down
+  there.
+
+  How it opens is the point. Every section on this page opens on a red eyebrow
+  above a heading, and the intro deals its red columns in left to right. So the
+  menu does the same: each red rule draws from the left, each name wipes in
+  behind it, and the rows resolve in page order 70ms apart.
+*/}
+<nav id="site-menu" class="site-menu" aria-label="Sections" inert>
+  <div class="container-page flex min-h-full flex-col pt-28 pb-12">
+    <ul>
+      {
+        nav.map((item, index) => (
+          <li class="menu-row" style={`--row:${index}`}>
+            <a href={item.href} class="menu-link">
+              {/* The rule is its own element rather than a border, because a
+                  border cannot be drawn: this one scales out from its left edge. */}
+              <span class="menu-rule" aria-hidden="true" />
+
+              <span class="menu-name">{item.label}</span>
+              <span class="menu-note">{item.note}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {/* The rule that closes the index. It is the last row as far as the
+        stagger is concerned, so it draws after the others and the menu
+        finishes on the same gesture it started with. */}
+    <span class="menu-rule menu-rule-close" style={`--row:${nav.length}`} aria-hidden="true"></span>
+
+    {/* mt-auto rather than a margin: the index sits under the header where it
+        was dealt, and this settles to the foot of whatever screen it lands on,
+        for anyone who would rather not scroll to a form. */}
+    <div class="menu-foot mt-auto pt-14">
+      {/* Not the red .eyebrow used elsewhere: brand red on ink is 3.3:1, which
+          is a rule colour and never 13px type. White at 70% clears 8:1 here,
+          and it is the same label treatment the contact panel already uses. */}
+      <p class="text-[13px] font-semibold uppercase tracking-[0.14em] text-white/70">
+        Or reach us directly
+      </p>
+
+      <ul class="mt-4 space-y-2 text-[18px]">
+        <li>
+          <a
+            href={contact.phoneHref}
+            class="text-white underline decoration-white/40 underline-offset-4 transition-colors hover:decoration-brand-red"
+          >
+            {contact.phone}
+          </a>
+        </li>
+        <li>
+          <a
+            href={`mailto:${contact.email}`}
+            class="text-white underline decoration-white/40 underline-offset-4 transition-colors hover:decoration-brand-red"
+          >
+            {contact.email}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<style>
+  /* ======================================================================
+     The toggle
+
+     Three bars that behave like the intro's columns: they draw from the left.
+     Resting on it wipes them in one after another, 55ms apart, and opening
+     the menu retracts the middle one to the left before the outer two swing
+     across it.
+     ====================================================================== */
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    color: var(--color-ink);
+    transition: color 300ms ease;
+    cursor: pointer;
+  }
+
+  .bars {
+    position: relative;
+    display: block;
+    width: 24px;
+    height: 14px;
+  }
+
+  .bar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+    transform-origin: left center;
+    transition: transform 220ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .bar:nth-child(1) {
+    top: 0;
+  }
+
+  .bar:nth-child(2) {
+    top: 6px;
+  }
+
+  .bar:nth-child(3) {
+    top: 12px;
+  }
+
+  /* An animation rather than a transition, because a transition travels
+     between two states, plays once, and then has nowhere left to go — this has
+     to re-run on every approach. Closed only: there are no bars to wipe once
+     they are an X. */
+  html:not([data-menu-open]) .menu-toggle:hover .bar {
+    animation: bar-wipe 300ms cubic-bezier(0.33, 1, 0.68, 1) backwards;
+  }
+
+  html:not([data-menu-open]) .menu-toggle:hover .bar:nth-child(2) {
+    animation-delay: 55ms;
+  }
+
+  html:not([data-menu-open]) .menu-toggle:hover .bar:nth-child(3) {
+    animation-delay: 110ms;
+  }
+
+  @keyframes bar-wipe {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  /* Open: the middle bar goes first, back out the way it came, and the outer
+     two follow it across once it is clear. They rotate about their centres so
+     the X actually crosses. */
+  html[data-menu-open] .bar {
+    transition-duration: 300ms;
+  }
+
+  html[data-menu-open] .bar:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+    transform-origin: center;
+    transition-delay: 90ms;
+  }
+
+  html[data-menu-open] .bar:nth-child(2) {
+    transform: scaleX(0);
+    transition-duration: 180ms;
+  }
+
+  html[data-menu-open] .bar:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+    transform-origin: center;
+    transition-delay: 90ms;
+  }
+
+  /* ======================================================================
+     The header, while the menu is open
+
+     The bar keeps the mark and the toggle and loses everything else: no
+     ground, no hairline. The ink behind it is the panel, so the two read as
+     one field with the mark sitting on it.
+     ====================================================================== */
+  html[data-menu-open] .site-header {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  html[data-menu-open] .menu-toggle {
+    color: #ffffff;
+  }
+
+  /* Both lockups occupy the same grid cell, so the swap costs no layout.
+
+     Reached through :global() off the scoped wrapper, because the <img> is
+     rendered inside Logo.astro and so never carries this component's scope
+     attribute — styling .brand-reverse directly from here compiles to a
+     selector that matches nothing, and the white lockup sits under the black
+     one in the flow, visible on the light bar. .brand-swap is in this
+     template, so the scope still fences the rule to this header. */
+  .brand-swap :global(img) {
+    grid-area: 1 / 1;
+    transition: opacity 300ms ease;
+  }
+
+  .brand-swap :global(.brand-reverse) {
+    opacity: 0;
+  }
+
+  html[data-menu-open] .brand-swap :global(.brand-primary) {
+    opacity: 0;
+  }
+
+  html[data-menu-open] .brand-swap :global(.brand-reverse) {
+    opacity: 1;
+  }
+
+  .brand-link {
+    transition: opacity 200ms ease;
+  }
+
+  .brand-link:hover {
+    opacity: 0.7;
+  }
+
+  /* ======================================================================
+     The panel
+
+     Every part of this is a transition off one attribute on <html> rather
+     than a set of keyframes, which buys the exit for free: closing is the
+     same journey with shorter timings and no stagger, so the menu never
+     disassembles itself slowly in front of someone who has already decided to
+     leave.
+
+     visibility is what takes it out of the a11y tree and out of hit testing at
+     rest, transitioned with a delay so it holds until the wipe has finished.
+     The script also flips `inert`, which is what keeps the rows out of the tab
+     order — belt and braces, and cheap.
+     ====================================================================== */
+  .site-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: var(--color-ink);
+    color: #ffffff;
+    visibility: hidden;
+    clip-path: inset(0 0 100% 0);
+    transition:
+      clip-path 300ms cubic-bezier(0.65, 0, 0.35, 1),
+      visibility 0s linear 300ms;
+  }
+
+  html[data-menu-open] .site-menu {
+    visibility: visible;
+    clip-path: inset(0 0 0 0);
+    transition:
+      clip-path 480ms cubic-bezier(0.65, 0, 0.35, 1),
+      visibility 0s;
+  }
+
+  .menu-link {
+    position: relative;
+    display: grid;
+    gap: 0.5rem;
+    padding-block: 1.25rem;
+  }
+
+  .menu-rule {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background-color: var(--color-brand-red);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 180ms ease-in;
+  }
+
+  /* The closing rule is the same object in the flow rather than pinned to the
+     top of a row, so it inherits everything else — colour, origin, the draw
+     itself — from the rules above it. */
+  .menu-rule-close {
+    position: static;
+    display: block;
+    width: 100%;
+  }
+
+  /* The wipe: a mask sweeping left to right across a word that never moves,
+     the same direction the intro deals its columns. The vertical insets are
+     negative so the box can never shave a descender off at rest. */
+  .menu-name {
+    display: block;
+    font-size: clamp(2rem, 1.25rem + 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    clip-path: inset(-0.3em 100% -0.3em 0);
+    transition: clip-path 160ms ease-in;
+  }
+
+  .menu-note {
+    max-width: 34ch;
+    font-size: 16px;
+    line-height: 1.6;
+    color: color-mix(in srgb, #ffffff 65%, transparent);
+    opacity: 0;
+    transition: opacity 150ms ease-in;
+  }
+
+  .menu-foot {
+    opacity: 0;
+    transition: opacity 150ms ease-in;
+  }
+
+  /* --row is the row's place in the page, set in the markup, and it is the
+     only thing that differs between them: the rule draws, the name wipes in
+     behind it, the note follows, and the whole row is 70ms behind the one
+     above, so the menu resolves top to bottom in the order the sections
+     themselves appear. */
+  html[data-menu-open] .menu-rule {
+    transform: scaleX(1);
+    transition: transform 420ms cubic-bezier(0.65, 0, 0.35, 1) calc(120ms + var(--row) * 70ms);
+  }
+
+  html[data-menu-open] .menu-name {
+    clip-path: inset(-0.3em 0 -0.3em 0);
+    transition: clip-path 520ms cubic-bezier(0.33, 1, 0.68, 1) calc(200ms + var(--row) * 70ms);
+  }
+
+  html[data-menu-open] .menu-note {
+    opacity: 1;
+    transition: opacity 400ms ease-out calc(300ms + var(--row) * 70ms);
+  }
+
+  html[data-menu-open] .menu-foot {
+    opacity: 1;
+    transition: opacity 400ms ease-out 560ms;
+  }
+
+  /* The global reduce rule collapses durations but leaves delays alone, which
+     would hold every row invisible for its share of the stagger and then snap
+     it in. Drop the delays too, and the menu simply is open or is not. */
+  @media (prefers-reduced-motion: reduce) {
+    .site-menu,
+    .site-menu *,
+    .bar,
+    .brand-swap :global(img) {
+      transition-delay: 0ms !important;
+      animation: none !important;
+    }
+  }
+  /* ======================================================================
+     Mobile only
+
+     Gated here rather than with a `md:hidden` utility because Astro appends
+     its scope attribute to these selectors, and .menu-toggle[data-astro-cid]
+     outweighs .md\:hidden — the utility loses and the bars turn up on desktop
+     beside the button they exist to replace. Last in the sheet on purpose: it
+     is overriding a display of equal specificity declared above.
+     ====================================================================== */
+  @media (min-width: 48rem) {
+    .menu-toggle,
+    .site-menu {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  /*
+    One attribute on <html> is the whole state: the panel, the header's
+    colours, the bars and the scroll lock all key off it, so nothing can end up
+    half open. Everything else here is the part CSS cannot do — telling
+    assistive tech what the button did, keeping the tab order inside the panel,
+    and putting focus back where it came from.
+  */
+  const root = document.documentElement;
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('site-menu');
+
+  if (toggle && menu) {
+    /* The page behind the panel, made inert while it is open so tabbing cannot
+       wander into a section nobody can see. The header is left out on purpose:
+       the mark and the close button are still on screen and still have to be
+       reachable. */
+    const behind = document.querySelectorAll<HTMLElement>('main, footer, a[href="#main"]');
+
+    const isOpen = () => root.hasAttribute('data-menu-open');
+
+    const setOpen = (open: boolean, restoreFocus = true) => {
+      root.toggleAttribute('data-menu-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      menu.toggleAttribute('inert', !open);
+      behind.forEach((el) => el.toggleAttribute('inert', open));
+
+      if (open) {
+        /* preventScroll, or the panel jumps to put the first row where the
+           browser thinks focus should be — mid-wipe. */
+        menu.querySelector('a')?.focus({ preventScroll: true });
+      } else if (restoreFocus) {
+        toggle.focus({ preventScroll: true });
+      }
+    };
+
+    toggle.addEventListener('click', () => setOpen(!isOpen()));
+
+    /* Closed without restoring focus: the browser is about to move to the
+       section this link points at, and dragging focus back up to the button
+       would undo that for anyone on a keyboard. Closing first is also what
+       releases the scroll lock in time for the jump to happen at all. */
+    menu.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false, false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && isOpen()) setOpen(false);
+    });
+
+    /* The menu is the mobile control only, so a rotation or a resize past the
+       md breakpoint has to close it — otherwise the panel is hidden by its own
+       md:hidden while the page behind it stays locked and inert. */
+    const desktop = window.matchMedia('(min-width: 48rem)');
+
+    desktop.addEventListener('change', (event) => {
+      if (event.matches && isOpen()) setOpen(false, false);
+    });
+  }
+</script>

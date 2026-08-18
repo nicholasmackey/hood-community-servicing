@@ -1,0 +1,62 @@
+---
+import ImagePlaceholder from './ImagePlaceholder.astro';
+
+const services = [
+  {
+    title: 'Lifeguard Staffing',
+    body: 'Reliable staffing, scheduling, coverage, and supervision.',
+    image: {
+      label: 'Lifeguard staffing',
+      src: '/images/lifeguard-staffing.webp',
+    },
+  },
+  {
+    title: 'Pool Management',
+    body: 'Day-to-day oversight and operational support.',
+    image: {
+      label: 'Pool management',
+      src: '/images/pool-management.webp',
+    },
+  },
+  {
+    title: 'Community Support',
+    body: 'Dependable service, communication, and an on-site presence communities can count on.',
+    image: {
+      label: 'Community experience',
+      src: '/images/community-experience.webp',
+    },
+  },
+];
+---
+
+<section id="services" class="section border-b border-border">
+  <div class="container-page">
+    <span class="eyebrow">What we handle</span>
+
+    <h2
+      class="mt-5 max-w-[20ch] text-[32px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[40px] lg:text-[48px]"
+    >
+      The people and support that keep communities running smoothly.
+    </h2>
+
+    <div class="mt-14 grid gap-x-10 gap-y-14 lg:mt-20 lg:grid-cols-3">
+      {
+        services.map((service) => (
+          <article>
+            <ImagePlaceholder
+              label={service.image.label}
+              src={service.image.src}
+              class="aspect-[4/3]"
+            />
+            <h3 class="mt-6 text-[22px] font-bold tracking-[-0.02em] lg:text-[24px]">
+              {service.title}
+            </h3>
+            <p class="mt-3 max-w-[42ch] text-[17px] leading-[1.6] text-muted">
+              {service.body}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

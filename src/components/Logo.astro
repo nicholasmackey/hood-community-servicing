@@ -1,0 +1,35 @@
+---
+// Brand assets live at the root of public/ and are referenced by path so they
+// are served as-is (no rasterizing, no processing).
+
+interface Props {
+  /**
+   * primary  — full lockup, ink. For light backgrounds.
+   * reverse  — full lockup, white. For dark backgrounds.
+   * wordmark — HOOD only, ink.
+   * mark     — icon only, ink.
+   */
+  variant?: 'primary' | 'reverse' | 'wordmark' | 'mark';
+  /** Set the height here, e.g. "h-9 w-auto". */
+  class?: string;
+  /** Empty alt when the logo sits inside an already-labelled link. */
+  alt?: string;
+}
+
+const {
+  variant = 'primary',
+  class: className = 'h-9 w-auto',
+  alt = 'HOOD Community Servicing',
+} = Astro.props;
+
+const assets = {
+  primary: { src: '/hood-logo-primary.svg', width: 507, height: 131 },
+  reverse: { src: '/hood-logo-reverse.svg', width: 507, height: 131 },
+  wordmark: { src: '/hood-wordmark.svg', width: 507, height: 92 },
+  mark: { src: '/hood-mark.svg', width: 240, height: 240 },
+} as const;
+
+const { src, width, height } = assets[variant];
+---
+
+<img src={src} width={width} height={height} alt={alt} class={className} />

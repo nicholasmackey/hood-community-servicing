@@ -1,0 +1,53 @@
+---
+const problems = [
+  {
+    title: 'Staffing gaps',
+    body: 'Unfilled positions turn into closed amenities, missed coverage, and calls to the office.',
+  },
+  {
+    title: 'Last-minute callouts',
+    body: 'Someone calling out at 8am should not become your whole morning.',
+  },
+  {
+    title: 'Day-to-day operations',
+    body: 'Opening, closing, supplies, incident reports, and the small things that add up.',
+  },
+  {
+    title: 'Resident expectations',
+    body: 'Residents notice when something is off, and the board hears about it before you do.',
+  },
+];
+---
+
+<section class="section border-b border-border">
+  <div class="container-page">
+    <span class="eyebrow">Community operations</span>
+
+    <h2
+      class="mt-5 max-w-[18ch] text-[32px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[40px] lg:text-[48px]"
+    >
+      There are enough things to manage already.
+    </h2>
+
+    <p class="mt-6 max-w-[62ch] text-[18px] leading-[1.65] text-muted lg:text-[20px]">
+      Running a community is not one job. It is staffing, scheduling, coverage,
+      certifications, daily operations, and constant communication with
+      residents and boards. Most of that lands on people who already have a full
+      portfolio to run, and none of it should be something you have to chase
+      every week.
+    </p>
+
+    <ul class="mt-14 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:mt-20 lg:grid-cols-4">
+      {
+        problems.map((problem) => (
+          <li class="border-t border-border pt-5">
+            <h3 class="text-[18px] font-semibold tracking-[-0.01em]">
+              {problem.title}
+            </h3>
+            <p class="mt-2.5 text-[16px] leading-[1.6] text-muted">{problem.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

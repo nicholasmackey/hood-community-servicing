@@ -1,17 +1,32 @@
 ---
-
+import BaseLayout from '../layouts/BaseLayout.astro';
+import IntroReveal from '../components/IntroReveal.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import ProblemSection from '../components/ProblemSection.astro';
+import ServicesSection from '../components/ServicesSection.astro';
+import WhyHoodSection from '../components/WhyHoodSection.astro';
+import ProofSection from '../components/ProofSection.astro';
+import ContactSection from '../components/ContactSection.astro';
+import Footer from '../components/Footer.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="HOOD Community Servicing — Lifeguard Staffing & Pool Management in DFW"
+  description="Lifeguard staffing, pool management, and community support for communities, properties, and organizations throughout DFW."
+>
+  <IntroReveal />
+
+  <Header />
+
+  <main id="main">
+    <Hero />
+    <ProblemSection />
+    <ServicesSection />
+    <WhyHoodSection />
+    <ProofSection />
+    <ContactSection />
+  </main>
+
+  <Footer />
+</BaseLayout>

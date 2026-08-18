@@ -1,0 +1,85 @@
+---
+/*
+ * Full-viewport video hero. The video is decorative background only: no
+ * controls, no audio, aria-hidden, and never focusable. All hero content sits
+ * above a flat dark scrim so the white copy stays readable over any frame.
+ */
+const VIDEO_SRC = 'https://assets.wellworncreative.com/hood-hero-movie.mov';
+---
+
+<section class="hero relative isolate flex w-full items-center justify-center overflow-hidden bg-ink text-white">
+  <video
+    class="absolute inset-0 h-full w-full object-cover"
+    src={VIDEO_SRC}
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="metadata"
+    tabindex="-1"
+    aria-hidden="true"
+    data-hero-video
+  >
+  </video>
+
+  <div class="absolute inset-0 bg-black/[0.38]" aria-hidden="true"></div>
+
+  <div class="container-page relative py-12 text-center md:py-16">
+    <h1
+      class="mx-auto max-w-[1100px] text-balance text-[42px] font-extrabold uppercase leading-[0.98] tracking-[-0.035em] md:text-[58px] md:leading-[0.96] lg:text-[76px] lg:leading-[0.95]"
+    >
+      THE TEAM THAT KEEPS YOUR COMMUNITY MOVING.
+    </h1>
+
+    <p
+      class="mx-auto mt-7 max-w-[800px] text-pretty text-[19px] font-medium leading-[1.4] text-white/85 md:mt-8 md:text-[23px]"
+    >
+      One dependable team for the staffing, maintenance, and everyday services
+      that keep your community moving.
+    </p>
+
+    <!-- Grid, not flex: equal fr tracks in a fit-content container size every
+         track to the widest button, so the two CTAs match without a hardcoded
+         width that copy changes would break. -->
+    <div class="mx-auto mt-9 grid w-fit grid-cols-1 gap-3 sm:grid-cols-2 md:mt-10">
+      <a href="#contact" class="btn btn-primary">Talk to HOOD</a>
+      <a href="#services" class="btn btn-secondary-reverse">See what we handle</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* A band, not the full screen: roughly 62% of the viewport, which is where
+     the fold sits on the reference layout. dvh so mobile browser chrome never
+     crops it; vh is the fallback. On narrow screens the stacked copy is taller
+     than the band, so the section grows past this floor rather than clipping. */
+  .hero {
+    min-height: 62vh;
+    min-height: 62dvh;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const video = document.querySelector('[data-hero-video]');
+    if (!video) return;
+
+    /* Reduced motion: never autoplay. The element stays in place, so the
+       browser paints its first frame as a still once metadata loads, and the
+       dark hero background stands in until then. Runs inline, right after the
+       element parses, so `autoplay` is dropped before playback can start. */
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const apply = () => {
+      if (reduced.matches) {
+        video.removeAttribute('autoplay');
+        video.pause();
+      } else {
+        video.play().catch(() => {});
+      }
+    };
+
+    apply();
+    reduced.addEventListener('change', apply);
+  })();
+</script>

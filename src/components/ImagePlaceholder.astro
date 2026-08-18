@@ -1,0 +1,26 @@
+---
+// Neutral stand-in for photography that has not been supplied yet.
+// Replace a usage with <Image src={...} alt="..." /> (or a plain <img>) when
+// the real asset lands in public/images/ — keep the same `class` so the layout
+// does not shift.
+
+interface Props {
+  /** Human label describing what belongs here. */
+  label: string;
+  /** Intended future asset path, shown so the swap is obvious. */
+  src?: string;
+  /** Callers set the aspect ratio here, e.g. "aspect-[16/9] lg:aspect-[21/9]". */
+  class?: string;
+}
+
+const { label, src, class: className = 'aspect-[16/9]' } = Astro.props;
+---
+
+<div
+  class={`flex flex-col items-center justify-center gap-2 border border-border bg-[#ECEAE8] px-6 text-center ${className}`}
+>
+  <span class="text-[12px] font-semibold uppercase tracking-[0.14em] text-muted">
+    {label}
+  </span>
+  {src && <span class="font-mono text-[11px] text-muted/75">{src}</span>}
+</div>

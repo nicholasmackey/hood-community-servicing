@@ -1,0 +1,111 @@
+---
+/*
+ * UI ONLY — there is no backend yet.
+ * The form intentionally has no `action`. Before launch, point it at a handler
+ * (Astro Actions, a form endpoint, or an email service) and add server-side
+ * validation plus a spam guard.
+ */
+
+const fields = [
+  { id: 'name', label: 'Name', type: 'text', autocomplete: 'name', required: true },
+  {
+    id: 'company',
+    label: 'Company / Organization',
+    type: 'text',
+    autocomplete: 'organization',
+    required: false,
+  },
+  { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true },
+  { id: 'phone', label: 'Phone', type: 'tel', autocomplete: 'tel', required: false },
+  {
+    id: 'property',
+    label: 'Community / Property Name',
+    type: 'text',
+    autocomplete: 'off',
+    required: false,
+  },
+] as const;
+
+const needs = [
+  'Lifeguard staffing',
+  'Pool management',
+  'Community support',
+  'Not sure yet',
+];
+
+const labelClass = 'block text-[13px] font-semibold uppercase tracking-[0.14em] text-white/70';
+
+const inputClass =
+  'mt-2.5 w-full rounded-sm border border-white/25 bg-white/[0.04] px-4 py-3.5 text-[16px] text-white placeholder:text-white/35 transition-colors hover:border-white/40 focus:border-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+---
+
+<section id="contact" class="bg-ink text-white">
+  <div class="container-page py-20 md:py-24 lg:py-32">
+    <div class="grid gap-x-16 gap-y-12 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <h2
+          class="max-w-[14ch] text-[32px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[40px] lg:text-[48px]"
+        >
+          Tell us what your community needs.
+        </h2>
+
+        <p class="mt-6 max-w-[44ch] text-[18px] leading-[1.6] text-white/70 lg:text-[20px]">
+          Tell us about your community, property, or organization and how we can
+          help. We'll take it from there.
+        </p>
+      </div>
+
+      <div class="lg:col-span-7">
+        <form class="grid gap-6 sm:grid-cols-2">
+          {
+            fields.map((field) => (
+              <div class={field.id === 'property' ? 'sm:col-span-2' : ''}>
+                <label class={labelClass} for={field.id}>
+                  {field.label}
+                  {!field.required && (
+                    <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
+                      (optional)
+                    </span>
+                  )}
+                </label>
+                <input
+                  id={field.id}
+                  name={field.id}
+                  type={field.type}
+                  autocomplete={field.autocomplete}
+                  required={field.required}
+                  class={inputClass}
+                />
+              </div>
+            ))
+          }
+
+          <div class="sm:col-span-2">
+            <label class={labelClass} for="need">What do you need help with?</label>
+            {/* color-scheme keeps the native option list dark instead of white-on-white */}
+            <select id="need" name="need" required class={inputClass} style="color-scheme: dark;">
+              <option value="">Select an option</option>
+              {needs.map((need) => <option value={need}>{need}</option>)}
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class={labelClass} for="message">
+              Message
+              <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
+                (optional)
+              </span>
+            </label>
+            <textarea id="message" name="message" rows="5" class={inputClass}></textarea>
+          </div>
+
+          <div class="sm:col-span-2">
+            <button type="submit" class="btn btn-primary w-full sm:w-auto">
+              Talk to HOOD
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,82 @@
+---
+import Logo from './Logo.astro';
+
+// TODO: replace every value below with real HOOD contact details.
+const contact = {
+  phone: '(000) 000-0000',
+  phoneHref: 'tel:+10000000000',
+  email: 'email@placeholder.com',
+  website: 'hoodcommunityservicing.com',
+  websiteHref: '/',
+};
+
+const nav = [
+  { label: 'Services', href: '#services' },
+  { label: 'Why HOOD', href: '#why-hood' },
+  { label: 'Contact', href: '#contact' },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-border bg-background">
+  <div class="container-page py-14 lg:py-16">
+    <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+      <div>
+        <Logo class="h-9 w-auto" alt="HOOD Community Servicing" />
+        <p class="mt-5 text-[16px] font-medium">Lifeguard Staffing &amp; Pool Management</p>
+        <p class="mt-1 text-[16px] text-muted">Serving DFW</p>
+      </div>
+
+      <div class="flex flex-col gap-10 sm:flex-row sm:gap-16">
+        <div>
+          <h2 class="text-[13px] font-semibold uppercase tracking-[0.14em] text-muted">
+            Contact
+          </h2>
+          <ul class="mt-4 space-y-2 text-[16px]">
+            <li>
+              <a href={contact.phoneHref} class="transition-colors hover:text-brand-red">
+                {contact.phone}
+              </a>
+            </li>
+            <li>
+              <a href={`mailto:${contact.email}`} class="transition-colors hover:text-brand-red">
+                {contact.email}
+              </a>
+            </li>
+            <li>
+              <a href={contact.websiteHref} class="transition-colors hover:text-brand-red">
+                {contact.website}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 class="text-[13px] font-semibold uppercase tracking-[0.14em] text-muted">
+            Site
+          </h2>
+          <ul class="mt-4 space-y-2 text-[16px]">
+            {
+              nav.map((item) => (
+                <li>
+                  <a href={item.href} class="transition-colors hover:text-brand-red">
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="mt-12 flex flex-col gap-3 border-t border-border pt-6 text-[14px] text-muted sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>&copy; {year} HOOD Community Servicing, LLC. All rights reserved.</p>
+      <!-- TODO: point at the real privacy policy once it exists. -->
+      <a href="/privacy" class="transition-colors hover:text-brand-red">Privacy</a>
+    </div>
+  </div>
+</footer>
