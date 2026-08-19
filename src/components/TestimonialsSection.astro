@@ -1,0 +1,95 @@
+---
+/*
+ * ============================================================================
+ * NO REAL TESTIMONIALS YET.
+ *
+ * `testimonials` is empty on purpose. Nothing on this page is a real quote,
+ * name, community, or review, and nothing here should be filled in with
+ * plausible-sounding stand-ins — an invented reference on a staffing site is a
+ * liability, not a design detail.
+ *
+ * To ship this section: add real, approved, attributed entries to the array
+ * below. The layout switches from the placeholder slots to the real quotes on
+ * its own; no markup changes are needed.
+ * ============================================================================
+ */
+
+interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  community: string;
+}
+
+const testimonials: Testimonial[] = [];
+
+const PLACEHOLDER_SLOTS = 2;
+
+/* Every level on this section is separated by size and weight, never by
+   opacity: on #DF231C nothing short of pure white clears 4.5:1, so white is
+   the only text colour the section gets. */
+---
+
+<section class="section-lg bg-brand-red text-white">
+  <div class="container-page">
+    <div class="lg:grid lg:grid-cols-12 lg:items-end lg:gap-x-16">
+      <div class="lg:col-span-7">
+        <span class="eyebrow eyebrow-on-red" data-reveal>What communities say</span>
+
+        <h2
+          class="h-statement mt-4 max-w-[16ch] lg:mt-5 lg:max-w-[14ch]"
+          data-reveal
+          style="--reveal-i:1"
+        >
+          Don’t take our word for it.
+        </h2>
+      </div>
+
+      <p
+        class="mt-6 max-w-[40ch] text-[18px] leading-[1.6] lg:col-span-5 lg:mt-0 lg:pb-2 lg:text-[19px]"
+        data-reveal
+        style="--reveal-i:2"
+      >
+        See what property managers and communities have said about working with
+        HOOD.
+      </p>
+    </div>
+
+    {
+      testimonials.length > 0 ? (
+        <div class="mt-14 grid gap-6 md:grid-cols-2 lg:mt-20 lg:gap-8">
+          {testimonials.map((testimonial) => (
+            <figure class="flex flex-col justify-between border border-white/75 p-8 lg:p-10">
+              <blockquote class="text-[20px] font-medium leading-[1.4] tracking-[-0.02em] lg:text-[23px]">
+                “{testimonial.quote}”
+              </blockquote>
+              <figcaption class="mt-8 text-[13px] font-semibold uppercase tracking-[0.1em]">
+                {testimonial.name}
+                <span class="block font-normal normal-case tracking-normal">
+                  {testimonial.role}, {testimonial.community}
+                </span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : (
+        <div class="mt-14 grid gap-6 md:grid-cols-2 lg:mt-20 lg:gap-8">
+          {Array.from({ length: PLACEHOLDER_SLOTS }, (_, index) => (
+            <div class="flex min-h-[240px] flex-col justify-between border border-dashed border-white/75 p-8 lg:p-10">
+              <p class="text-[13px] font-semibold uppercase tracking-[0.1em]">
+                Testimonial {index + 1} — awaiting approved quote
+              </p>
+              <p class="mt-6 text-[17px] leading-[1.6]">
+                A real, attributed quote from a property manager or community
+                goes here. Nothing has been written for this slot.
+              </p>
+              <p class="mt-8 text-[13px] font-semibold uppercase tracking-[0.1em]">
+                Name, role, community
+              </p>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</section>

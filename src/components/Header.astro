@@ -1,16 +1,23 @@
 ---
 import Logo from './Logo.astro';
 
+// Page order. The menu's stagger keys off this array's index, so the rows
+// resolve top to bottom in the order the sections themselves appear.
 const nav = [
-  {
-    label: 'Services',
-    href: '#services',
-    note: 'Lifeguard staffing, pool management, and community support.',
-  },
   {
     label: 'Why HOOD',
     href: '#why-hood',
-    note: 'Professional where it matters. Personal where it counts.',
+    note: 'Your community already has enough to manage.',
+  },
+  {
+    label: 'Services',
+    href: '#services',
+    note: 'Pool staffing, cleanups, hauling, power washing, and more.',
+  },
+  {
+    label: 'Team',
+    href: '#team',
+    note: 'People you can actually get ahold of.',
   },
   {
     label: 'Contact',
@@ -49,8 +56,8 @@ const contact = {
       </span>
     </a>
 
-    <nav aria-label="Primary" class="flex items-center gap-8">
-      <ul class="hidden items-center gap-8 md:flex">
+    <nav aria-label="Primary" class="flex items-center gap-6 lg:gap-8">
+      <ul class="hidden items-center gap-6 md:flex lg:gap-8">
         {
           nav.map((item) => (
             <li>
@@ -135,7 +142,7 @@ const contact = {
       {/* Not the red .eyebrow used elsewhere: brand red on ink is 3.3:1, which
           is a rule colour and never 13px type. White at 70% clears 8:1 here,
           and it is the same label treatment the contact panel already uses. */}
-      <p class="text-[13px] font-semibold uppercase tracking-[0.14em] text-white/70">
+      <p class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70">
         Or reach us directly
       </p>
 
@@ -376,8 +383,8 @@ const contact = {
     display: block;
     font-size: clamp(2rem, 1.25rem + 4vw, 2.75rem);
     font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
+    line-height: 1;
+    letter-spacing: -0.036em;
     clip-path: inset(-0.3em 100% -0.3em 0);
     transition: clip-path 160ms ease-in;
   }

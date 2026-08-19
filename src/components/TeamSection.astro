@@ -1,0 +1,149 @@
+---
+import ImagePlaceholder from './ImagePlaceholder.astro';
+import Logo from './Logo.astro';
+
+/*
+ * PHOTOGRAPHY PENDING — the two portraits below are placeholders. Drop the
+ * real files at the paths named on them and swap each <ImagePlaceholder /> for
+ * an <img> with the same aspect class, and nothing else about the card moves.
+ *
+ * Bios and titles here are HOOD's own copy and are real.
+ */
+
+const people = [
+  {
+    name: 'Tim Hood',
+    role: 'Founder & CEO',
+    bio: 'Tim Hood founded HOOD Community Services to help communities run better. With a hands-on approach and a focus on reliability, he leads a team committed to supporting property managers and the communities they serve.',
+    image: { label: 'Tim Hood portrait', src: '/images/team-tim-hood.webp' },
+  },
+  {
+    name: 'Tamika Stokes',
+    role: 'Director of Operations',
+    bio: 'Tamika oversees day-to-day operations at HOOD Community Services, keeping the team organized, responsive, and focused on delivering dependable support to the communities they serve.',
+    image: { label: 'Tamika Stokes portrait', src: '/images/team-tamika-stokes.webp' },
+  },
+];
+---
+
+<section id="team" class="section-lg bg-surface">
+  <div class="container-page">
+    <span class="eyebrow" data-reveal>The people behind HOOD</span>
+
+    <h2
+      class="h-section mt-4 max-w-[18ch] lg:max-w-[16ch]"
+      data-reveal
+      style="--reveal-i:1"
+    >
+      People you can actually get ahold of.
+    </h2>
+
+    <p
+      class="mt-6 max-w-[62ch] text-[18px] leading-[1.7] text-muted lg:text-[19px]"
+      data-reveal
+      style="--reveal-i:2"
+    >
+      When you reach out to HOOD, you’re talking to the people responsible for
+      getting the work done. Clear communication, practical help, and a team
+      that understands community operations.
+    </p>
+
+    <div class="mt-10 grid gap-6 md:grid-cols-2 lg:mt-14 lg:gap-8">
+      {
+        people.map((person, index) => (
+          <article class="card" data-reveal style={`--reveal-i:${index}`}>
+            <ImagePlaceholder
+              label={person.image.label}
+              src={person.image.src}
+              bordered={false}
+              class="aspect-[4/5] sm:aspect-[5/4] md:aspect-[4/5]"
+            />
+
+            <div class="card__body">
+              <h3 class="text-[26px] font-bold tracking-[-0.034em] lg:text-[30px]">
+                {person.name}
+              </h3>
+              <p class="eyebrow mt-2">{person.role}</p>
+              <p class="mt-4 text-[17px] leading-[1.7] text-muted">{person.bio}</p>
+            </div>
+
+            <Logo variant="mark" alt="" class="card__mark" />
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-background);
+  }
+
+  /* A card that lifts a couple of pixels and firms up its edge. Desktop
+     pointers only — on a touch screen this either never fires or sticks after
+     a tap, the same reason the services rows gate their hover. */
+  @media (hover: hover) and (min-width: 768px) {
+    .card {
+      transition:
+        transform 320ms cubic-bezier(0.33, 1, 0.68, 1),
+        border-color 320ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: color-mix(in srgb, var(--color-ink) 28%, transparent);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card,
+      .card:hover {
+        transform: none;
+        transition: none;
+      }
+    }
+  }
+
+  .card__body {
+    position: relative;
+    z-index: 1;
+    /* Fills the taller of the two cards, so a longer bio does not leave the
+       other card's mark floating in the middle of an empty panel. */
+    flex: 1;
+    padding: 1.75rem 1.5rem 2.25rem;
+  }
+
+  @media (min-width: 1024px) {
+    .card__body {
+      padding: 2.25rem 2.25rem 2.75rem;
+    }
+  }
+
+  /* Oversized and clipped by the card's lower-right corner, quiet enough to
+     read as a watermark on the panel rather than a second logo. Rendered by
+     Logo.astro, so it never carries this component's scope attribute — reached
+     by class from the scoped .card instead. */
+  .card :global(.card__mark) {
+    position: absolute;
+    right: -3.25rem;
+    bottom: -3.25rem;
+    z-index: 0;
+    width: 15rem;
+    height: auto;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  @media (min-width: 1024px) {
+    .card :global(.card__mark) {
+      right: -4rem;
+      bottom: -4rem;
+      width: 18rem;
+    }
+  }
+</style>

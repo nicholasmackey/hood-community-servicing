@@ -11,41 +11,52 @@ const contact = {
 };
 
 const nav = [
-  { label: 'Services', href: '#services' },
   { label: 'Why HOOD', href: '#why-hood' },
+  { label: 'Services', href: '#services' },
+  { label: 'Team', href: '#team' },
   { label: 'Contact', href: '#contact' },
 ];
 
 const year = new Date().getFullYear();
+
+/*
+ * Dark, like the CTA directly above it. Everywhere else on the page no two
+ * neighbouring sections share a ground, and this is the one deliberate
+ * exception: the close is meant to read as a single block the page lands on,
+ * so the footer steps from ink to night rather than resetting to light. The
+ * step is small enough to be a seam and large enough to be visible.
+ */
 ---
 
-<footer class="border-t border-border bg-background">
+<footer class="bg-night text-white">
   <div class="container-page py-14 lg:py-16">
     <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
       <div>
-        <Logo class="h-9 w-auto" alt="HOOD Community Servicing" />
-        <p class="mt-5 text-[16px] font-medium">Lifeguard Staffing &amp; Pool Management</p>
-        <p class="mt-1 text-[16px] text-muted">Serving DFW</p>
+        <Logo variant="reverse" class="h-9 w-auto" alt="HOOD Community Servicing" />
+        <p class="mt-5 max-w-[34ch] text-[16px] font-medium">
+          Staffing, pool management, and everyday community services
+        </p>
+        <p class="mt-1 text-[16px] text-white/70">Serving DFW</p>
       </div>
 
       <div class="flex flex-col gap-10 sm:flex-row sm:gap-16">
         <div>
-          <h2 class="text-[13px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <h2 class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70">
             Contact
           </h2>
           <ul class="mt-4 space-y-2 text-[16px]">
             <li>
-              <a href={contact.phoneHref} class="transition-colors hover:text-brand-red">
+              <a href={contact.phoneHref} class="transition-colors hover:text-brand-red-soft">
                 {contact.phone}
               </a>
             </li>
             <li>
-              <a href={`mailto:${contact.email}`} class="transition-colors hover:text-brand-red">
+              <a href={`mailto:${contact.email}`} class="transition-colors hover:text-brand-red-soft">
                 {contact.email}
               </a>
             </li>
             <li>
-              <a href={contact.websiteHref} class="transition-colors hover:text-brand-red">
+              <a href={contact.websiteHref} class="transition-colors hover:text-brand-red-soft">
                 {contact.website}
               </a>
             </li>
@@ -53,14 +64,14 @@ const year = new Date().getFullYear();
         </div>
 
         <div>
-          <h2 class="text-[13px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <h2 class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70">
             Site
           </h2>
           <ul class="mt-4 space-y-2 text-[16px]">
             {
               nav.map((item) => (
                 <li>
-                  <a href={item.href} class="transition-colors hover:text-brand-red">
+                  <a href={item.href} class="transition-colors hover:text-brand-red-soft">
                     {item.label}
                   </a>
                 </li>
@@ -72,11 +83,11 @@ const year = new Date().getFullYear();
     </div>
 
     <div
-      class="mt-12 flex flex-col gap-3 border-t border-border pt-6 text-[14px] text-muted sm:flex-row sm:items-center sm:justify-between"
+      class="mt-12 flex flex-col gap-3 border-t border-white/15 pt-6 text-[14px] text-white/70 sm:flex-row sm:items-center sm:justify-between"
     >
       <p>&copy; {year} HOOD Community Servicing, LLC. All rights reserved.</p>
       <!-- TODO: point at the real privacy policy once it exists. -->
-      <a href="/privacy" class="transition-colors hover:text-brand-red">Privacy</a>
+      <a href="/privacy" class="transition-colors hover:text-brand-red-soft">Privacy</a>
     </div>
   </div>
 </footer>

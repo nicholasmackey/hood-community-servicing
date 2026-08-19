@@ -3,28 +3,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import IntroReveal from '../components/IntroReveal.astro';
 import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
-import ProblemSection from '../components/ProblemSection.astro';
-import ServicesSection from '../components/ServicesSection.astro';
 import WhyHoodSection from '../components/WhyHoodSection.astro';
-import ProofSection from '../components/ProofSection.astro';
+import ServicesSection from '../components/ServicesSection.astro';
+import LessToManageSection from '../components/LessToManageSection.astro';
+import TeamSection from '../components/TeamSection.astro';
+import TestimonialsSection from '../components/TestimonialsSection.astro';
 import ContactSection from '../components/ContactSection.astro';
 import Footer from '../components/Footer.astro';
 ---
 
 <BaseLayout
-  title="HOOD Community Servicing — Lifeguard Staffing & Pool Management in DFW"
-  description="Lifeguard staffing, pool management, and community support for communities, properties, and organizations throughout DFW."
+  title="HOOD Community Servicing — Community Services for HOAs in DFW"
+  description="Lifeguard staffing, pool management, cleanups, hauling, power washing, and everyday community services for HOAs, neighborhoods, and residential communities in DFW."
 >
   <IntroReveal />
 
   <Header />
 
+  {/* Post-intro rhythm: footage, white, near-black, white, white, red, ink. */}
   <main id="main">
     <Hero />
-    <ProblemSection />
-    <ServicesSection />
     <WhyHoodSection />
-    <ProofSection />
+    <ServicesSection />
+    <LessToManageSection />
+    <TeamSection />
+    <TestimonialsSection />
     <ContactSection />
   </main>
 

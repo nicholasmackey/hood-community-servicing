@@ -1,13 +1,15 @@
 ---
 /*
- * Full-viewport video hero. The video is decorative background only: no
+ * Full-screen video hero. The video is decorative background only: no
  * controls, no audio, aria-hidden, and never focusable. All hero content sits
- * above a flat dark scrim so the white copy stays readable over any frame.
+ * above a dark scrim so the white copy stays readable over any frame.
  */
 const VIDEO_SRC = 'https://assets.wellworncreative.com/hood-hero-movie.mov';
 ---
 
-<section class="hero relative isolate flex w-full items-center justify-center overflow-hidden bg-ink text-white">
+<section
+  class="hero relative isolate flex w-full items-center justify-center overflow-hidden bg-ink text-white"
+>
   <video
     class="absolute inset-0 h-full w-full object-cover"
     src={VIDEO_SRC}
@@ -22,40 +24,108 @@ const VIDEO_SRC = 'https://assets.wellworncreative.com/hood-hero-movie.mov';
   >
   </video>
 
-  <div class="absolute inset-0 bg-black/[0.38]" aria-hidden="true"></div>
+  {/*
+    Two layers rather than one flat wash. The gradient weights the top and
+    bottom edges, where the copy is not, so the middle of the frame — the part
+    of the footage worth seeing — stays the lightest part of the shot; the flat
+    scrim underneath it is what guarantees a readable floor on a frame that
+    happens to be bright everywhere.
+  */}
+  <div class="absolute inset-0 bg-black/[0.32]" aria-hidden="true"></div>
+  <div
+    class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0.08)_42%,rgba(0,0,0,0.52)_100%)]"
+    aria-hidden="true"
+  >
+  </div>
 
-  <div class="container-page relative py-12 text-center md:py-16">
+  <div class="container-page relative flex flex-col items-center py-8 text-center md:py-10">
     <h1
-      class="mx-auto max-w-[1100px] text-balance text-[42px] font-extrabold uppercase leading-[0.98] tracking-[-0.035em] md:text-[58px] md:leading-[0.96] lg:text-[76px] lg:leading-[0.95]"
+      class="max-w-[17ch] text-balance text-[clamp(2rem,1.15rem+4.2vw,4.75rem)] font-extrabold uppercase leading-[0.94] tracking-[-0.042em]"
     >
-      THE TEAM THAT KEEPS YOUR COMMUNITY MOVING.
+      The team that keeps your community moving.
     </h1>
 
     <p
-      class="mx-auto mt-7 max-w-[800px] text-pretty text-[19px] font-medium leading-[1.4] text-white/85 md:mt-8 md:text-[23px]"
+      class="mt-4 max-w-[62ch] text-pretty text-[15px] font-medium leading-[1.5] text-white/90 sm:text-[16px] md:mt-5 md:text-[18px]"
     >
-      One dependable team for the staffing, maintenance, and everyday services
-      that keep your community moving.
+      Lifeguard staffing, pool management, maintenance, cleanup, hauling, and
+      everyday community services for HOAs, neighborhoods, and residential
+      communities.
     </p>
 
-    <!-- Grid, not flex: equal fr tracks in a fit-content container size every
-         track to the widest button, so the two CTAs match without a hardcoded
-         width that copy changes would break. -->
-    <div class="mx-auto mt-9 grid w-fit grid-cols-1 gap-3 sm:grid-cols-2 md:mt-10">
-      <a href="#contact" class="btn btn-primary">Talk to HOOD</a>
-      <a href="#services" class="btn btn-secondary-reverse">See what we handle</a>
-    </div>
+    <a href="#contact" class="btn btn-primary mt-6 md:mt-7">Talk to HOOD</a>
   </div>
+
+  {/*
+    A full-screen hero ends exactly at the fold, so nothing about it says there
+    is a page underneath. This is that signal and nothing else: one hairline
+    with a red segment running down it, at the foot of the frame, from tablet
+    up where there is room for it under the button.
+  */}
+  <span class="hero__scroll" aria-hidden="true"></span>
 </section>
 
 <style>
-  /* A band, not the full screen: roughly 62% of the viewport, which is where
-     the fold sits on the reference layout. dvh so mobile browser chrome never
-     crops it; vh is the fallback. On narrow screens the stacked copy is taller
-     than the band, so the section grows past this floor rather than clipping. */
+  /* Intentionally shorter than the viewport so the next section is always
+     discoverable. The min-height guard keeps the copy comfortable on short,
+     landscape screens without turning the hero back into a full-screen panel. */
   .hero {
-    min-height: 62vh;
-    min-height: 62dvh;
+    height: 60vh;
+    height: 60svh;
+    min-height: 430px;
+    max-height: 680px;
+  }
+
+  .hero__scroll {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .hero__scroll {
+      display: block;
+      position: absolute;
+      bottom: 1.25rem;
+      left: 50%;
+      width: 1px;
+      height: 34px;
+      transform: translateX(-50%);
+      background-color: color-mix(in srgb, #ffffff 26%, transparent);
+      overflow: hidden;
+    }
+
+    /* The red segment. Travels the length of the rule and starts over, which
+       is the one piece of motion the hero has after the video itself. */
+    .hero__scroll::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      top: 0;
+      height: 12px;
+      background-color: var(--color-brand-red);
+      animation: hero-scroll 2200ms cubic-bezier(0.65, 0, 0.35, 1) infinite;
+    }
+  }
+
+  @keyframes hero-scroll {
+    0% {
+      transform: translateY(-100%);
+    }
+    55%,
+    100% {
+      transform: translateY(34px);
+    }
+  }
+
+  @media (max-height: 720px) {
+    .hero {
+      min-height: 390px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__scroll {
+      display: none;
+    }
   }
 </style>
 

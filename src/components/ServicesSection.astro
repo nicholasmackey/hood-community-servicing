@@ -1,62 +1,502 @@
 ---
-import ImagePlaceholder from './ImagePlaceholder.astro';
+import Logo from './Logo.astro';
 
-const services = [
+/*
+ * The one big moment on the page.
+ *
+ * Seven services is too many for a grid and too static as a list — the old
+ * vertical <ol> was accurate and completely inert. Here the same seven become
+ * full-height colour panels that travel sideways while the section is pinned,
+ * so scrolling through the services is the thing that makes the section
+ * memorable rather than the type size.
+ *
+ * The colours are the supporting palette and this is very nearly the only
+ * place on the page that uses it. Each panel names its own ground and its own
+ * text colour; see global.css for the contrast each pairing was chosen for.
+ * Two of them — sage and brand red — clear 4.5:1 with nothing to spare, so
+ * they are marked below and their body copy is pure white at full opacity
+ * rather than the muted tint the roomier panels can afford.
+ *
+ * On a phone, and under reduced motion, none of the above happens: the panels
+ * stack and the section is a column of colour blocks. That is a CSS switch,
+ * not a second component — see the media query at the foot of the file.
+ */
+
+interface Service {
+  title: string;
+  body: string;
+  /** Panel ground. */
+  bg: string;
+  /** The only text colour this ground takes. */
+  fg: string;
+  /**
+   * Set where the pairing clears 4.5:1 with nothing to spare, and the panel
+   * therefore cannot dim anything: no muted body copy, no faded label. Those
+   * panels separate their levels by weight and size instead.
+   */
+  tight?: true;
+  /** Ink-on-light. The HOOD mark is ink artwork, so it only reads on these. */
+  light?: true;
+}
+
+const services: Service[] = [
   {
-    title: 'Lifeguard Staffing',
-    body: 'Reliable staffing, scheduling, coverage, and supervision.',
-    image: {
-      label: 'Lifeguard staffing',
-      src: '/images/lifeguard-staffing.webp',
-    },
+    title: 'Lifeguard staffing + pool monitoring',
+    body: 'Staffing and on-site monitoring for community pools.',
+    bg: 'var(--color-teal)',
+    fg: '#ffffff',
   },
   {
-    title: 'Pool Management',
-    body: 'Day-to-day oversight and operational support.',
-    image: {
-      label: 'Pool management',
-      src: '/images/pool-management.webp',
-    },
+    title: 'Pool management',
+    body: 'Day-to-day support for the work that keeps community pools ready for residents.',
+    bg: 'var(--color-night)',
+    fg: '#ffffff',
   },
   {
-    title: 'Community Support',
-    body: 'Dependable service, communication, and an on-site presence communities can count on.',
-    image: {
-      label: 'Community experience',
-      src: '/images/community-experience.webp',
-    },
+    title: 'Pet waste removal + haul',
+    body: 'Routine removal and hauling to help keep shared outdoor areas cleaner.',
+    bg: 'var(--color-sage)',
+    fg: '#ffffff',
+    tight: true, // white on sage is 4.75:1
+  },
+  {
+    title: 'Small hauls',
+    body: 'Help moving away unwanted items, debris, and other small loads from community spaces.',
+    bg: 'var(--color-sand)',
+    fg: 'var(--color-ink)',
+    light: true,
+  },
+  {
+    title: 'Common area cleanups',
+    body: 'Cleanup support for shared spaces that need regular or one-time attention.',
+    bg: 'var(--color-linen)',
+    fg: 'var(--color-ink)',
+    light: true,
+  },
+  {
+    title: 'Power washing',
+    body: 'Cleaning for walkways, pool decks, common areas, and other shared surfaces.',
+    bg: 'var(--color-brand-red)',
+    fg: '#ffffff',
+    tight: true, // white on brand red is 4.79:1
+  },
+  {
+    title: 'Community support',
+    body: 'Practical help for the other day-to-day needs that come up around an HOA community.',
+    bg: 'var(--color-night)',
+    fg: '#ffffff',
   },
 ];
+
+const panelVars = (service: Service) =>
+  [
+    `--panel-bg:${service.bg}`,
+    `--panel-fg:${service.fg}`,
+    `--panel-body:${
+      service.tight ? service.fg : `color-mix(in srgb, ${service.fg} 74%, ${service.bg})`
+    }`,
+  ].join(';');
 ---
 
-<section id="services" class="section border-b border-border">
-  <div class="container-page">
-    <span class="eyebrow">What we handle</span>
+<section id="services" class="bg-night text-white">
+  {/* Scrolls normally, above the pin — the pin is the panels and nothing else. */}
+  <div class="container-page services__head" data-reveal>
+    <span class="eyebrow eyebrow-on-dark">Services</span>
+    <h2 class="h-section mt-4 max-w-[14ch] lg:max-w-none">What we handle.</h2>
+  </div>
 
-    <h2
-      class="mt-5 max-w-[20ch] text-[32px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[40px] lg:text-[48px]"
-    >
-      The people and support that keep communities running smoothly.
-    </h2>
+  {/*
+    The scroller is tall; the pin inside it is one screen. The difference is
+    how far the track travels sideways, and it is set by the script as a custom
+    property rather than a height, so the CSS gets to decide whether to use it.
+  */}
+  <div class="services__scroller" data-services-scroller>
+    <div class="services__pin">
+      <ol class="services__track" data-services-track>
+        {
+          services.map((service, index) => (
+            <li
+              class="panel"
+              style={panelVars(service)}
+              data-tight={service.tight}
+              data-light={service.light}
+            >
+              {/*
+                The graphic treatment: the numeral again, oversized and sunk
+                into the ground behind the type. Decorative — the legible copy
+                of the number is the label below, and the list is ordered, so
+                nothing is lost by hiding this one.
+              */}
+              <span class="panel__ghost" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
 
-    <div class="mt-14 grid gap-x-10 gap-y-14 lg:mt-20 lg:grid-cols-3">
-      {
-        services.map((service) => (
-          <article>
-            <ImagePlaceholder
-              label={service.image.label}
-              src={service.image.src}
-              class="aspect-[4/3]"
-            />
-            <h3 class="mt-6 text-[22px] font-bold tracking-[-0.02em] lg:text-[24px]">
-              {service.title}
-            </h3>
-            <p class="mt-3 max-w-[42ch] text-[17px] leading-[1.6] text-muted">
-              {service.body}
+              <Logo variant="mark" alt="" class="panel__mark" />
+
+              <div class="panel__body">
+                <span class="panel__num">
+                  {String(index + 1).padStart(2, '0')}
+                  <span class="panel__num-total"> / {String(services.length).padStart(2, '0')}</span>
+                </span>
+
+                <h3 class="panel__title">{service.title}</h3>
+
+                <p class="panel__copy">{service.body}</p>
+              </div>
+            </li>
+          ))
+        }
+
+        {/*
+          The list is not the boundary of what HOOD does, and a list always
+          reads like it is. As the last panel this lands as the end of the run
+          rather than as a card left over underneath it.
+        */}
+        <li class="panel panel--callout">
+          <Logo variant="reverse" alt="" class="panel__mark" />
+
+          <div class="panel__body">
+            <span class="panel__num panel__num--callout">And whatever else</span>
+
+            <p class="panel__title">Need something else taken care of?</p>
+
+            <p class="panel__copy">
+              HOOD is continuing to add services based on what communities need.
             </p>
-          </article>
-        ))
-      }
+
+            <a href="#contact" class="btn btn-primary mt-7 self-start">Talk to HOOD</a>
+          </div>
+        </li>
+      </ol>
+
+      {/* How much of the run is left. Only ever drawn while the section is pinned. */}
+      <div class="services__progress" aria-hidden="true">
+        <span class="services__progress-bar" data-services-bar></span>
+      </div>
     </div>
   </div>
 </section>
+
+<style>
+  .services__head {
+    padding-block: var(--section-space) calc(var(--section-space) * 0.6);
+  }
+
+  /* ======================================================================
+     Panels — the shared half.
+
+     Everything here applies in both layouts. The pin, the sideways travel and
+     the panel sizing are all in the desktop query at the foot of the file;
+     until then this is a plain stacked column of colour blocks, which is
+     exactly what the phone and reduced-motion layouts want.
+     ====================================================================== */
+  .panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+    padding: 3.5rem var(--gutter) 3rem;
+    background-color: var(--panel-bg);
+    color: var(--panel-fg);
+  }
+
+  .panel--callout {
+    --panel-bg: var(--color-night);
+    --panel-fg: #ffffff;
+    --panel-body: color-mix(in srgb, #ffffff 72%, var(--color-night));
+    border-top: 3px solid var(--color-brand-red);
+  }
+
+  .panel__body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* The oversized numeral, sunk into the panel behind the type. Low enough to
+     be a ground rather than a second heading competing with the title. */
+  .panel__ghost {
+    position: absolute;
+    top: -0.28em;
+    right: -0.06em;
+    z-index: 0;
+    font-size: clamp(9rem, 34vw, 15rem);
+    font-weight: 800;
+    line-height: 0.75;
+    letter-spacing: -0.06em;
+    color: color-mix(in srgb, var(--panel-fg) 14%, transparent);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Rendered by Logo.astro, so the <img> never carries this component's scope
+     attribute — reached by class from the scoped panel instead. The mark is
+     ink-on-transparent, so it only reads as texture on the light panels; the
+     dark ones get the reverse mark's job done by the ghost numeral above. */
+  .panel :global(.panel__mark) {
+    display: none;
+  }
+
+  .panel__num {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.1em;
+    color: var(--panel-fg);
+  }
+
+  .panel__num-total {
+    font-weight: 500;
+    opacity: 0.55;
+  }
+
+  /* On the two grounds with no headroom, a 55%-opacity label would fall under
+     4.5:1. They keep the second level in weight alone. */
+  .panel[data-tight] .panel__num-total {
+    font-weight: 400;
+    opacity: 1;
+  }
+
+  .panel__title {
+    margin-top: 0.875rem;
+    max-width: 15ch;
+    font-size: clamp(1.75rem, 1.1rem + 2.7vw, 3.25rem);
+    font-weight: 700;
+    line-height: 0.98;
+    letter-spacing: -0.038em;
+    text-wrap: balance;
+  }
+
+  .panel__copy {
+    margin-top: 0.875rem;
+    max-width: 34ch;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--panel-body);
+  }
+
+  /* Hidden until the pin exists to draw it in. */
+  .services__progress {
+    display: none;
+  }
+
+  /* ======================================================================
+     The pin.
+
+     Desktop pointers only, when motion is welcome, and — via [data-ready] —
+     only once the script is actually driving it. That last condition is the
+     important one: a pinned track the script never moves would show panel one
+     and clip the other seven out of reach, so the pin is not allowed to exist
+     until something is there to scroll it. No JS, a thrown script, an old
+     browser: all of them fall back to the stacked column above, which is the
+     whole section and perfectly readable.
+
+     Everything the script writes is a custom property read only inside this
+     query, so there is no second copy of the DOM and nothing to tear down.
+     ====================================================================== */
+  @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    /* Tall. The extra height over one screen is the scroll the pin consumes,
+       and the script sets it from how far the track actually has to move. */
+    .services__scroller[data-ready] {
+      height: calc(100svh + var(--services-travel, 0px));
+    }
+
+    [data-ready] .services__pin {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      /* Clips the track. Note this is on the sticky element itself, never on an
+         ancestor — an ancestor with overflow: hidden would stop it sticking. */
+      overflow: hidden;
+    }
+
+    [data-ready] .services__track {
+      display: flex;
+      height: 100%;
+      transform: translate3d(var(--services-x, 0px), 0, 0);
+      /* Only inside this block, so the promoted layer exists exactly while
+         something is animating it. */
+      will-change: transform;
+    }
+
+    [data-ready] .panel {
+      flex: none;
+      width: clamp(420px, 56vw, 760px);
+      /* Panels run full-bleed behind the sticky header, which is what keeps the
+         colour edge to edge. The copy has to clear it. */
+      padding: calc(var(--header-h) + 3rem) 4rem 5rem;
+      border-left: 1px solid color-mix(in srgb, var(--panel-fg) 14%, transparent);
+    }
+
+    [data-ready] .panel:first-child {
+      border-left: 0;
+    }
+
+    [data-ready] .panel--callout {
+      border-top: 0;
+      border-left: 3px solid var(--color-brand-red);
+    }
+
+    [data-ready] .panel__ghost {
+      font-size: clamp(14rem, 20vw, 22rem);
+    }
+
+    /* The mark earns its place once a panel is a whole screen. Quiet enough to
+       be texture on the light grounds, where the ink artwork actually shows. */
+    [data-ready] .panel[data-light] :global(.panel__mark) {
+      display: block;
+      position: absolute;
+      right: -3rem;
+      bottom: -3rem;
+      z-index: 0;
+      width: 18rem;
+      height: auto;
+      opacity: 0.07;
+      pointer-events: none;
+    }
+
+    [data-ready] .panel--callout :global(.panel__mark) {
+      display: block;
+      position: absolute;
+      right: -2.5rem;
+      bottom: -2.5rem;
+      z-index: 0;
+      width: 17rem;
+      height: auto;
+      opacity: 0.09;
+      pointer-events: none;
+    }
+
+    [data-ready] .panel__title {
+      max-width: 13ch;
+    }
+
+    /* Sits over the panels at the foot of the pinned screen — the one thing
+       telling you how much of the run is left, and that it does end. */
+    [data-ready] .services__progress {
+      display: block;
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      z-index: 2;
+      height: 2px;
+      background-color: color-mix(in srgb, #ffffff 22%, transparent);
+    }
+
+    [data-ready] .services__progress-bar {
+      display: block;
+      height: 100%;
+      background-color: var(--color-brand-red);
+      transform: scaleX(var(--services-progress, 0));
+      transform-origin: left center;
+    }
+  }
+</style>
+
+<script>
+  /*
+   * Drives the pin. Reads the scroller's position and writes two custom
+   * properties; the CSS above decides whether either one means anything, which
+   * is why there is no layout branch in here and nothing to undo on a phone.
+   *
+   * Reads happen in the scroll handler, writes happen in the frame — one write
+   * per frame however many events arrived — and both are transform-only.
+   */
+  const scroller = document.querySelector<HTMLElement>('[data-services-scroller]');
+  const track = document.querySelector<HTMLElement>('[data-services-track]');
+  const bar = document.querySelector<HTMLElement>('[data-services-bar]');
+
+  if (scroller && track && bar) {
+    /* Vertical scroll spent per pixel of sideways travel. At 1:1 eight
+       full-width panels would eat about six screens of scrolling before the
+       page moved on, which stops being an interaction and starts being a
+       hostage situation. This lands it near three. */
+    const SCROLL_RATIO = 0.62;
+
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let travel = 0;
+    let distance = 0;
+    let frame = 0;
+    let active = false;
+    let observer: ResizeObserver | null = null;
+
+    const measure = () => {
+      travel = Math.max(0, track.scrollWidth - scroller.clientWidth);
+      distance = travel * SCROLL_RATIO;
+      scroller.style.setProperty('--services-travel', `${distance}px`);
+    };
+
+    const paint = () => {
+      frame = 0;
+      if (!distance) return;
+
+      /* The scroller's top passes 0 as the pin engages and reaches -distance as
+         it lets go, so this is 0 → 1 across exactly the pinned range. */
+      const offset = -scroller.getBoundingClientRect().top;
+      const progress = Math.min(1, Math.max(0, offset / distance));
+
+      track.style.setProperty('--services-x', `${-progress * travel}px`);
+      bar.style.setProperty('--services-progress', String(progress));
+    };
+
+    const request = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(paint);
+    };
+
+    const enable = () => {
+      if (active) return;
+      active = true;
+
+      measure();
+      paint();
+
+      scroller.dataset.ready = '';
+      window.addEventListener('scroll', request, { passive: true });
+
+      /* Catches the panel width changing with the viewport, and anything else
+         that moves the track's width — a font swapping in, most likely. */
+      observer = new ResizeObserver(() => {
+        measure();
+        request();
+      });
+      observer.observe(scroller);
+      observer.observe(track);
+    };
+
+    const disable = () => {
+      if (!active) return;
+      active = false;
+
+      window.removeEventListener('scroll', request);
+      observer?.disconnect();
+      observer = null;
+
+      if (frame) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+      }
+
+      /* Leave nothing behind. The CSS already ignores these outside the desktop
+         query, but a stale --services-travel would be waiting to be believed
+         again the moment the viewport crossed back over. */
+      delete scroller.dataset.ready;
+      track.style.removeProperty('--services-x');
+      bar.style.removeProperty('--services-progress');
+      scroller.style.removeProperty('--services-travel');
+    };
+
+    const sync = () => {
+      if (desktop.matches && !reduced.matches) enable();
+      else disable();
+    };
+
+    sync();
+    desktop.addEventListener('change', sync);
+    reduced.addEventListener('change', sync);
+  }
+</script>

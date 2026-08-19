@@ -1,0 +1,100 @@
+---
+import Logo from './Logo.astro';
+
+/*
+ * The statement section. One idea, set as large as the grid will take, on the
+ * stone neutral rather than the white above it so the two light moments on the
+ * page are not the same light moment twice.
+ *
+ * The mark is the only decoration and it is doing a job: at this size and this
+ * opacity it is a ground for the type, and it is what keeps the section from
+ * being a paragraph floating in whitespace.
+ */
+---
+
+<section class="section-lg relative isolate overflow-hidden bg-stone">
+  <Logo variant="mark" alt="" class="statement__mark" />
+
+  <div class="container-page relative">
+    <span class="eyebrow" data-reveal>Less to manage</span>
+
+    <h2
+      class="h-statement mt-4 max-w-[17ch] lg:mt-5 lg:max-w-[13ch]"
+      data-reveal
+      style="--reveal-i:1"
+    >
+      One call. Fewer things to chase down.
+    </h2>
+
+    <p
+      class="mt-6 max-w-[54ch] text-[18px] leading-[1.7] text-muted md:text-[19px] lg:mt-8 lg:text-[20px]"
+      data-reveal
+      style="--reveal-i:2"
+    >
+      Managing a community often means coordinating people, vendors, schedules,
+      and small problems that cannot wait. HOOD gives you one place to start
+      when something needs attention.
+    </p>
+  </div>
+</section>
+
+<style>
+  /* Off below md: on a phone the copy runs the full width of the screen and
+     the mark would sit under every line of it rather than beside them. */
+  .statement__mark {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    /* Rendered by Logo.astro, so the <img> never carries this component's
+       scope attribute — reached by class from the scoped section instead. */
+    section :global(.statement__mark) {
+      display: block;
+      position: absolute;
+      top: 50%;
+      right: -7%;
+      z-index: -1;
+      width: min(460px, 46vw);
+      height: auto;
+      transform: translateY(-50%);
+      opacity: 0.06;
+      pointer-events: none;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    section :global(.statement__mark) {
+      right: -4%;
+      width: 540px;
+    }
+  }
+
+  /* The mark drifts a little as the section crosses the viewport, so the
+     ground behind the type is not perfectly static while everything else
+     moves. Six rems over a whole section is barely perceptible, which is the
+     intent — parallax you can point at is parallax that is too strong.
+
+     Scroll-driven CSS rather than a scroll listener: it runs off the main
+     thread, and where the browser does not support it the mark simply sits
+     still and nothing else changes. The keyframes restate translateY(-50%)
+     because the animation replaces the transform above rather than adding
+     to it. */
+  @keyframes mark-drift {
+    from {
+      transform: translateY(-50%) translateY(3rem);
+    }
+    to {
+      transform: translateY(-50%) translateY(-3rem);
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+      section :global(.statement__mark) {
+        animation: mark-drift linear both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+      }
+    }
+  }
+</style>

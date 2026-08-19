@@ -37,7 +37,7 @@ const socialImage = new URL(image, Astro.site);
     <meta property="og:image:height" content="600" />
     <meta
       property="og:image:alt"
-      content="HOOD Community Servicing — lifeguard staffing and pool management in DFW"
+      content="HOOD Community Servicing — staffing, pool management, and everyday community services in DFW"
     />
 
     <!-- Twitter/X renders the same asset as a large summary card -->
@@ -51,6 +51,56 @@ const socialImage = new URL(image, Astro.site);
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <Font cssVariable="--font-inter" preload />
+
+    {/*
+      Scroll reveal, page-wide. Paired with the [data-reveal] rules in
+      global.css, which do nothing until this script sets the flag below.
+
+      The flag is set here, in <head>, rather than after the DOM is ready: the
+      rules hide their elements, and setting the flag any later means the first
+      screen paints visible and then blinks out. Everything that needs the DOM
+      waits for it separately.
+
+      Not setting the flag is the failure mode, and it is a safe one — no JS,
+      no IntersectionObserver, or reduced motion all leave every [data-reveal]
+      element as ordinary visible content.
+    */}
+    <script is:inline>
+      (() => {
+        if (!('IntersectionObserver' in window)) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        document.documentElement.dataset.revealReady = '';
+
+        const start = () => {
+          const targets = document.querySelectorAll('[data-reveal]');
+          if (!targets.length) return;
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                entry.target.classList.add('is-revealed');
+                // Once only. These are entrances, not scroll-linked state.
+                observer.unobserve(entry.target);
+              }
+            },
+            /* Fire a little before the block reaches the bottom edge, so it is
+               finishing as it arrives rather than starting once it is already
+               being read. */
+            { rootMargin: '0px 0px -12% 0px', threshold: 0.05 }
+          );
+
+          targets.forEach((target) => observer.observe(target));
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', start, { once: true });
+        } else {
+          start();
+        }
+      })();
+    </script>
   </head>
 
   <body>

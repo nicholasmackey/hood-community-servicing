@@ -8,11 +8,54 @@
 
 @theme {
   --color-brand-red: #DF231C;
-  --color-ink: #1B1917;
-  --color-background: #F7F7F9;
+  --color-ink: #0F0F0F;
+  --color-background: #FFFFFF;
   --color-surface: #FFFFFF;
-  --color-muted: #6F6A67;
-  --color-border: #E6E3E1;
+  --color-muted: #606060;
+  --color-border: #DEDEDE;
+
+  /* Near-black for the services section. Deeper than --color-ink so the two
+     dark moments on the page do not read as the same panel repeated. */
+  --color-night: #0F0F0F;
+
+  /* Warm light neutral. The page has two light sections back to back and they
+     have to feel different: --color-surface is the white one, this is the
+     stone one. */
+  --color-stone: #FFFFFF;
+
+  /* Brand red, opened up for small type on --color-night. #DF231C is 4.0:1
+     there, which is a rule colour and not a 13px label; this clears 5.2:1.
+     Use it for type on dark only — hairlines and fills stay the real red. */
+  --color-brand-red-soft: #E6534E;
+
+  /* ------------------------------------------------------------------------
+     Supporting palette.
+
+     These exist to give the services sequence its variation, and to warm the
+     one light section sitting directly under the hero. They are support, not
+     brand: they never appear in the logo, they are never spread across the
+     page as accents, and black/white/red still carry everything that reads as
+     HOOD. Their entire remit is the services panels plus --color-linen as the
+     Why HOOD ground.
+
+     Every one of them is a panel background, so each is paired below with the
+     only text colour it is allowed to carry.
+     ------------------------------------------------------------------------ */
+
+  /* Warm off-white. Why HOOD's ground, and services panel 05. Takes --color-ink
+     at 15.2:1. */
+  --color-linen: #FFFFFF;
+
+  /* Services panel 03. Takes pure white at 4.75:1 — over 4.5:1, but with no
+     headroom at all, so white on sage never gets an opacity ramp. */
+  --color-sage: #687864;
+
+  /* Services panel 01. Takes white at 7.3:1, the one supporting colour with
+     room for a muted body tint. */
+  --color-teal: #035E7B;
+
+  /* Services panel 04. Takes --color-ink at 10.9:1. */
+  --color-sand: #D8C9B5;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -21,20 +64,26 @@
 :root {
   --container-max: 1280px;
   --gutter: 20px;
-  --section-space: 72px;
+  --section-space: 48px;
+
+  /* The sticky header's own height. It was duplicated as a literal in the hero
+     and is needed again by the pinned services panels, which sit behind the
+     header and have to keep their copy out from under it. One source. */
+  --header-h: 72px;
 }
 
 @media (min-width: 768px) {
   :root {
     --gutter: 32px;
-    --section-space: 96px;
+    --section-space: 64px;
   }
 }
 
 @media (min-width: 1024px) {
   :root {
     --gutter: 56px;
-    --section-space: 120px;
+    --section-space: 72px;
+    --header-h: 80px;
   }
 }
 
@@ -111,14 +160,89 @@
     padding-block: var(--section-space);
   }
 
+  /* The statement sections — services, less-to-manage, testimonials — carry
+     less copy and get a longer measure of the same rhythm, rather than a
+     different one. */
+  .section-lg {
+    padding-block: calc(var(--section-space) * 1.12);
+  }
+
+  /* --------------------------------------------------------------------------
+     Heading ramp — three tiers, and the tier is the section's volume.
+
+     The page is meant to run bold, calm, loud, calm, calm, bold, bold, and the
+     heading size is most of what carries that. Every section shouting at once
+     is the same as none of them shouting.
+
+     The tiers separate hardest at the small end. On a 375px screen the middle
+     sections used to open at 32–38px, which on a 335px column is a four-line
+     stack before the copy even starts; the desktop maxima barely move, because
+     at 1280px there is room for the size and it reads as scale rather than as
+     volume.
+
+     All three are set tight — line-height at or under 1, letter-spacing past
+     -0.035em — because the logo is a compressed mark and headings set loose
+     do not look like it. The line-height loosens very slightly as the size
+     drops: .h-section is the tier most likely to run to three lines on a
+     phone, and at 27px it is the one place where 0.95 would start closing
+     descenders onto the ascenders below them.
+     -------------------------------------------------------------------------- */
+
+  /* Calm. The working sections — Why HOOD, Team, the services header. 27px on
+     a phone, 52px from 1280px up. */
+  .h-section {
+    font-size: clamp(1.75rem, 1.15rem + 2.25vw, 3rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.038em;
+    text-wrap: balance;
+  }
+
+  /* Strong, not loud. The two sections that are a single idea — Less to Manage
+     and the testimonials — where the section is meant to have weight but the
+     ground it sits on is what actually carries it. 32px → 60px. */
+  .h-statement {
+    font-size: clamp(2rem, 1.3rem + 2.8vw, 3.5rem);
+    font-weight: 800;
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  /* Loud. The closing CTA, and nothing else — the hero sets its own size. This
+     is the tier the rest of the page steps down from. 38px → 72px. */
+  .h-display {
+    font-size: clamp(2.375rem, 1.15rem + 5vw, 4.5rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  /* A label on the heading below it, which is why the tracking is modest and
+     why every section sets the gap under it to 14–20px. At 0.14em it read as
+     its own floating element; the heading has to be the next thing your eye
+     reaches, not the next thing it finds. */
   .eyebrow {
     display: block;
     font-size: 13px;
     font-weight: 600;
     line-height: 1.2;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.075em;
     color: var(--color-brand-red);
+  }
+
+  /* On the dark panels — --color-night and --color-ink alike. The real red is
+     3.7:1 on ink and 4.0:1 on night, neither of which carries 13px type. */
+  .eyebrow-on-dark {
+    color: var(--color-brand-red-soft);
+  }
+
+  /* On brand red. Nothing short of pure white clears 4.5:1 on #DF231C, so the
+     red section separates its levels by weight and size, never by opacity. */
+  .eyebrow-on-red {
+    color: #ffffff;
   }
 
   /* Buttons: square-ish and quiet. No pills, no shadows. */
@@ -162,6 +286,16 @@
     border-color: var(--color-ink);
   }
 
+  /* Solid white fill, for use on the brand-red section. */
+  .btn-white {
+    background-color: #ffffff;
+    color: var(--color-ink);
+  }
+
+  .btn-white:hover {
+    background-color: color-mix(in srgb, #ffffff 88%, #000);
+  }
+
   /* Reverse variant, for use on the dark contact section. */
   .btn-secondary-reverse {
     background-color: transparent;
@@ -171,5 +305,49 @@
 
   .btn-secondary-reverse:hover {
     border-color: #ffffff;
+  }
+}
+
+/* ==========================================================================
+   Scroll reveal
+
+   One shared entrance: a short rise and fade as a block crosses into view.
+   Used at roughly one per section — the eyebrow and heading as a single unit,
+   the team cards as a stagger — and not on individual paragraphs. A page where
+   every element fades up is a page you have to wait for.
+
+   Opt-in, and the opt-in is the script's: nothing here applies until the
+   inline script in BaseLayout sets data-reveal-ready on <html>. So if the
+   script never runs, IntersectionObserver is missing, or the user asked for
+   reduced motion, [data-reveal] elements are plain visible content and no
+   copy on this page can be hidden by a script that failed.
+   ========================================================================== */
+
+html[data-reveal-ready] [data-reveal] {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Stagger siblings by setting --reveal-i on each; unset means no delay. */
+  transition-delay: calc(var(--reveal-i, 0) * 90ms);
+}
+
+html[data-reveal-ready] [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* The base reduced-motion block zeroes durations but not delays, so a staggered
+   element would still sit invisible for its delay before appearing. This drops
+   the effect outright rather than speeding it up. Belt and braces: the script
+   also declines to set data-reveal-ready under reduced motion, so in practice
+   these rules never match — this is here for a mid-session preference flip. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-reveal-ready] [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    transition-delay: 0ms !important;
   }
 }
