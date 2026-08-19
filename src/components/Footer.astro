@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import { withBase } from '../utils/paths';
 
 // TODO: replace every value below with real HOOD contact details.
 const contact = {
@@ -7,8 +8,10 @@ const contact = {
   phoneHref: 'tel:+10000000000',
   email: 'email@placeholder.com',
   website: 'hoodcommunityservicing.com',
-  websiteHref: '/',
+  websiteHref: withBase('/'),
 };
+
+const privacyHref = withBase('/privacy');
 
 const nav = [
   { label: 'Why HOOD', href: '#why-hood' },
@@ -83,7 +86,7 @@ const year = new Date().getFullYear();
     >
       <p>&copy; {year} HOOD Community Servicing, LLC. All rights reserved.</p>
       <!-- TODO: point at the real privacy policy once it exists. -->
-      <a href="/privacy" class="transition-colors hover:text-brand-red-soft">Privacy</a>
+      <a href={privacyHref} class="transition-colors hover:text-brand-red-soft">Privacy</a>
     </div>
   </div>
 </footer>

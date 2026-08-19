@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/paths';
+
 interface Service {
   title: string;
   body: string;
@@ -9,37 +11,37 @@ const services: Service[] = [
   {
     title: 'Lifeguard staffing + pool monitoring',
     body: 'Staffing and on-site monitoring for community pools.',
-    image: '/images/services/pool-staffing.jpg',
+    image: withBase('/images/services/pool-staffing.jpg'),
   },
   {
     title: 'Pool management',
     body: 'Day-to-day support for the work that keeps community pools ready for residents.',
-    image: '/images/services/pool-management.jpg',
+    image: withBase('/images/services/pool-management.jpg'),
   },
   {
     title: 'Pet waste removal + haul',
     body: 'Routine removal and hauling to help keep shared outdoor areas cleaner.',
-    image: '/images/services/pet-waste.jpg',
+    image: withBase('/images/services/pet-waste.jpg'),
   },
   {
     title: 'Small hauls',
     body: 'Help moving away unwanted items, debris, and other small loads from community spaces.',
-    image: '/images/services/small-hauls.jpg',
+    image: withBase('/images/services/small-hauls.jpg'),
   },
   {
     title: 'Common area cleanups',
     body: 'Cleanup support for shared spaces that need regular or one-time attention.',
-    image: '/images/services/common-area-cleanup.jpg',
+    image: withBase('/images/services/common-area-cleanup.jpg'),
   },
   {
     title: 'Power washing',
     body: 'Cleaning for walkways, pool decks, common areas, and other shared surfaces.',
-    image: '/images/services/power-washing.jpg',
+    image: withBase('/images/services/power-washing.jpg'),
   },
   {
     title: 'Community support',
     body: 'Practical help for the other day-to-day needs that come up around an HOA community.',
-    image: '/images/services/community-support.jpg',
+    image: withBase('/images/services/community-support.jpg'),
   },
 ];
 ---

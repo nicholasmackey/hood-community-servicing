@@ -1,16 +1,27 @@
 ---
+import { withBase } from '../utils/paths';
+
 interface Props {
   modelUrl?: string;
   label?: string;
 }
 
 const {
-  modelUrl = '/models/hood-mark.glb',
+  modelUrl = withBase('/models/hood-mark.glb'),
   label = 'Three-dimensional HOOD mark',
 } = Astro.props;
+
+const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
 ---
 
-<div class="mark" data-hood-mark-3d data-model-url={modelUrl} role="img" aria-label={label}>
+<div
+  class="mark"
+  data-hood-mark-3d
+  data-model-url={modelUrl}
+  role="img"
+  aria-label={label}
+  style={`--mark-fallback-mask: ${fallbackMask}`}
+>
   <canvas class="mark__canvas" data-mark-canvas aria-hidden="true"></canvas>
   <span class="mark__fallback" aria-hidden="true"></span>
 </div>
@@ -45,8 +56,8 @@ const {
     height: auto;
     aspect-ratio: 1;
     background-color: var(--color-brand-red);
-    -webkit-mask: url('/hood-mark.svg') center / contain no-repeat;
-    mask: url('/hood-mark.svg') center / contain no-repeat;
+    -webkit-mask: var(--mark-fallback-mask) center / contain no-repeat;
+    mask: var(--mark-fallback-mask) center / contain no-repeat;
     transition: opacity 220ms ease;
   }
 

@@ -5,9 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  // Absolute base for canonical links and Open Graph image URLs — social crawlers
-  // reject relative paths, so `Astro.site` has to be set for the meta card to resolve.
-  site: 'https://hoodcommunityservicing.com',
+  // GitHub Pages project site: https://nicholasmackey.github.io/hood-community-servicing/
+  site: 'https://nicholasmackey.github.io',
+  base: '/hood-community-servicing',
 
   // Inter is self-hosted and optimized by Astro's font pipeline.
   // The `--font-inter` variable is consumed by `--font-sans` in src/styles/global.css.

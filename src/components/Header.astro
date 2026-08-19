@@ -1,5 +1,8 @@
 ---
 import Logo from './Logo.astro';
+import { withBase } from '../utils/paths';
+
+const homeHref = withBase('/');
 
 // Page order. The menu's stagger keys off this array's index, so the rows
 // resolve top to bottom in the order the sections themselves appear.
@@ -49,7 +52,7 @@ const contact = {
       The reverse copy is what keeps the wordmark legible once the ink panel is
       up behind the bar.
     */}
-    <a href="/" class="brand-link shrink-0" aria-label="HOOD Community Servicing — home">
+    <a href={homeHref} class="brand-link shrink-0" aria-label="HOOD Community Servicing — home">
       <span class="brand-swap grid">
         <Logo class="brand-primary h-8 w-auto lg:h-9" alt="" />
         <Logo variant="reverse" class="brand-reverse h-8 w-auto lg:h-9" alt="" />

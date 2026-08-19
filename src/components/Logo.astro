@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/paths';
+
 // Brand assets live at the root of public/ and are referenced by path so they
 // are served as-is (no rasterizing, no processing).
 
@@ -23,10 +25,10 @@ const {
 } = Astro.props;
 
 const assets = {
-  primary: { src: '/hood-logo-primary.svg', width: 507, height: 131 },
-  reverse: { src: '/hood-logo-reverse.svg', width: 507, height: 131 },
-  wordmark: { src: '/hood-wordmark.svg', width: 507, height: 92 },
-  mark: { src: '/hood-mark.svg', width: 240, height: 240 },
+  primary: { src: withBase('/hood-logo-primary.svg'), width: 507, height: 131 },
+  reverse: { src: withBase('/hood-logo-reverse.svg'), width: 507, height: 131 },
+  wordmark: { src: withBase('/hood-wordmark.svg'), width: 507, height: 92 },
+  mark: { src: withBase('/hood-mark.svg'), width: 240, height: 240 },
 } as const;
 
 const { src, width, height } = assets[variant];
