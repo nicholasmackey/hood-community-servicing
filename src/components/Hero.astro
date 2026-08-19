@@ -40,7 +40,7 @@ const VIDEO_SRC = 'https://assets.wellworncreative.com/hood-hero-movie.mov';
 
   <div class="container-page relative flex flex-col items-center py-8 text-center md:py-10">
     <h1
-      class="max-w-[17ch] text-balance text-[clamp(2rem,1.15rem+4.2vw,4.75rem)] font-extrabold uppercase leading-[0.94] tracking-[-0.042em]"
+      class="max-w-[17ch] text-balance text-[clamp(2rem,1.15rem+4.2vw,4.75rem)] font-extrabold uppercase leading-[0.96] tracking-[-0.02em]"
     >
       The team that keeps your community moving.
     </h1>
@@ -67,17 +67,21 @@ const VIDEO_SRC = 'https://assets.wellworncreative.com/hood-hero-movie.mov';
 
 <style>
   /* Intentionally shorter than the viewport so the next section is always
-     discoverable. The min-height guard keeps the copy comfortable on short,
-     landscape screens without turning the hero back into a full-screen panel. */
+     discoverable. */
   .hero {
     height: 60vh;
     height: 60svh;
-    min-height: 430px;
-    max-height: 680px;
   }
 
   .hero__scroll {
     display: none;
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 {
+      max-width: 100%;
+      font-size: 1.8125rem;
+    }
   }
 
   @media (min-width: 768px) {
@@ -113,12 +117,6 @@ const VIDEO_SRC = 'https://assets.wellworncreative.com/hood-hero-movie.mov';
     55%,
     100% {
       transform: translateY(34px);
-    }
-  }
-
-  @media (max-height: 720px) {
-    .hero {
-      min-height: 390px;
     }
   }
 

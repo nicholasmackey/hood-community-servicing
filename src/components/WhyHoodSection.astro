@@ -1,47 +1,23 @@
 ---
-/*
- * Editorial, not another centred hero. The headline holds the left of a 12
- * column grid and the supporting copy sits offset from it — lower and to the
- * right — so the two read in sequence rather than as one stacked block.
- *
- * White and compact. It follows the footage hero as an editorial change of
- * pace rather than another screen-sized statement.
- */
+/* Compact, left-aligned introduction on white. */
 ---
 
 <section id="why-hood" class="section bg-surface">
   <div class="container-page">
     <span class="eyebrow" data-reveal>Why HOOD</span>
 
-    <div class="mt-2.5 grid gap-x-16 gap-y-7 lg:grid-cols-12 lg:gap-y-0">
-      {/* The cap is a different measure at each end, because the size is. At
-          27px on a 335px column a 17ch cap runs the line to the gutter, and at
-          52px a 13ch one stacks the same sentence four lines deep. Neither
-          number is right at the other size. */}
-      <h2 class="h-section max-w-[20ch] lg:col-span-7 lg:max-w-[17ch]" data-reveal style="--reveal-i:1">
+    <div class="mt-2.5 max-w-[60rem]">
+      <h2 class="h-section max-w-[24ch]" data-reveal style="--reveal-i:1">
         Your community already has enough to manage.
       </h2>
 
-      {/*
-        The offset. On desktop this column starts partway down the headline
-        beside it, which is what stops the two from reading as a centred
-        stack; the rule is the only thing marking where the copy begins, and
-        on a phone it does that work on its own.
-
-        The drop is measured against the headline, not chosen for its own
-        sake. Now that the headline sets to two tight lines rather than three
-        loose ones, the old 7.5rem left the bottom-left of the section empty
-        enough to read as a hole instead of as asymmetry.
-      */}
-      <div class="lg:col-span-5 lg:col-start-8 lg:mt-10" data-reveal style="--reveal-i:2">
-        <span class="block h-px w-16 bg-brand-red" aria-hidden="true"></span>
-
-        <p class="mt-4 max-w-[46ch] text-[17px] font-medium leading-[1.55] lg:text-[18px]">
+      <div class="mt-4" data-reveal style="--reveal-i:2">
+        <p class="intro-copy text-ink">
           Pools need to be staffed. Common areas need attention. Small
           maintenance and cleanup jobs still have to get handled.
         </p>
 
-        <p class="mt-4 max-w-[46ch] text-[16px] leading-[1.6] text-muted lg:text-[17px]">
+        <p class="body-copy mt-3">
           HOOD Community Services helps HOAs handle the everyday work that keeps
           a community running. From pool staffing and management to cleanups,
           hauling, power washing, and other community needs, we’re here to make

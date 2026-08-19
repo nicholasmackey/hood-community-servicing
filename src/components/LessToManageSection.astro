@@ -1,100 +1,87 @@
 ---
-import Logo from './Logo.astro';
-
-/*
- * The statement section. One idea, set as large as the grid will take, on the
- * stone neutral rather than the white above it so the two light moments on the
- * page are not the same light moment twice.
- *
- * The mark is the only decoration and it is doing a job: at this size and this
- * opacity it is a ground for the type, and it is what keeps the section from
- * being a paragraph floating in whitespace.
- */
+import HoodMark3D from './HoodMark3D.astro';
 ---
 
-<section class="section-lg relative isolate overflow-hidden bg-stone">
-  <Logo variant="mark" alt="" class="statement__mark" />
+<section id="less-to-manage" class="less bg-surface">
+  <div class="container-page less__grid">
+    <div class="less__copy">
+      <h2 class="h-section max-w-[22ch]" data-reveal>
+        One call. Fewer things to chase down.
+      </h2>
 
-  <div class="container-page relative">
-    <span class="eyebrow" data-reveal>Less to manage</span>
+      <p
+        class="intro-copy mt-4 text-ink/80"
+        data-reveal
+        style="--reveal-i:1"
+      >
+        Managing a community often means coordinating people, vendors, schedules,
+        and small problems that cannot wait. HOOD gives you one place to start
+        when something needs attention.
+      </p>
 
-    <h2
-      class="h-statement mt-4 max-w-[17ch] lg:mt-5 lg:max-w-[13ch]"
-      data-reveal
-      style="--reveal-i:1"
-    >
-      One call. Fewer things to chase down.
-    </h2>
+      <a href="#contact" class="less__link" data-reveal style="--reveal-i:2">
+        Start with HOOD
+        <span aria-hidden="true">&#8599;</span>
+      </a>
+    </div>
 
-    <p
-      class="mt-6 max-w-[54ch] text-[18px] leading-[1.7] text-muted md:text-[19px] lg:mt-8 lg:text-[20px]"
-      data-reveal
-      style="--reveal-i:2"
-    >
-      Managing a community often means coordinating people, vendors, schedules,
-      and small problems that cannot wait. HOOD gives you one place to start
-      when something needs attention.
-    </p>
+    <div class="less__visual" data-reveal style="--reveal-i:1">
+      <HoodMark3D />
+    </div>
   </div>
 </section>
 
 <style>
-  /* Off below md: on a phone the copy runs the full width of the screen and
-     the mark would sit under every line of it rather than beside them. */
-  .statement__mark {
-    display: none;
+  .less {
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .less__grid {
+    display: grid;
+    align-items: center;
+    gap: 1.75rem;
+    padding-block: var(--section-space);
+  }
+
+  .less__copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  .less__visual {
+    width: 100%;
+  }
+
+  .less__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 1.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--color-ink);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    transition: gap 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+
+  .less__link:hover {
+    gap: 0.8rem;
+    border-color: var(--color-brand-red);
+    color: var(--color-brand-red);
   }
 
   @media (min-width: 768px) {
-    /* Rendered by Logo.astro, so the <img> never carries this component's
-       scope attribute — reached by class from the scoped section instead. */
-    section :global(.statement__mark) {
-      display: block;
-      position: absolute;
-      top: 50%;
-      right: -7%;
-      z-index: -1;
-      width: min(460px, 46vw);
-      height: auto;
-      transform: translateY(-50%);
-      opacity: 0.06;
-      pointer-events: none;
+    .less__grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+      gap: clamp(2rem, 4vw, 4rem);
     }
   }
 
-  @media (min-width: 1280px) {
-    section :global(.statement__mark) {
-      right: -4%;
-      width: 540px;
-    }
-  }
-
-  /* The mark drifts a little as the section crosses the viewport, so the
-     ground behind the type is not perfectly static while everything else
-     moves. Six rems over a whole section is barely perceptible, which is the
-     intent — parallax you can point at is parallax that is too strong.
-
-     Scroll-driven CSS rather than a scroll listener: it runs off the main
-     thread, and where the browser does not support it the mark simply sits
-     still and nothing else changes. The keyframes restate translateY(-50%)
-     because the animation replaces the transform above rather than adding
-     to it. */
-  @keyframes mark-drift {
-    from {
-      transform: translateY(-50%) translateY(3rem);
-    }
-    to {
-      transform: translateY(-50%) translateY(-3rem);
-    }
-  }
-
-  @supports (animation-timeline: view()) {
-    @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
-      section :global(.statement__mark) {
-        animation: mark-drift linear both;
-        animation-timeline: view();
-        animation-range: entry 0% exit 100%;
-      }
+  @media (prefers-reduced-motion: reduce) {
+    .less__link {
+      transition: none;
     }
   }
 </style>

@@ -8,54 +8,17 @@
 
 @theme {
   --color-brand-red: #DF231C;
-  --color-ink: #0F0F0F;
+  --color-ink: #2B211D;
   --color-background: #FFFFFF;
   --color-surface: #FFFFFF;
   --color-muted: #606060;
   --color-border: #DEDEDE;
 
-  /* Near-black for the services section. Deeper than --color-ink so the two
-     dark moments on the page do not read as the same panel repeated. */
-  --color-night: #0F0F0F;
+  /* Shared warm black for typography and the page's dark sections. */
+  --color-night: #2B211D;
 
-  /* Warm light neutral. The page has two light sections back to back and they
-     have to feel different: --color-surface is the white one, this is the
-     stone one. */
-  --color-stone: #FFFFFF;
-
-  /* Brand red, opened up for small type on --color-night. #DF231C is 4.0:1
-     there, which is a rule colour and not a 13px label; this clears 5.2:1.
-     Use it for type on dark only — hairlines and fills stay the real red. */
+  /* Lighter red reserved for small labels on the dark ground. */
   --color-brand-red-soft: #E6534E;
-
-  /* ------------------------------------------------------------------------
-     Supporting palette.
-
-     These exist to give the services sequence its variation, and to warm the
-     one light section sitting directly under the hero. They are support, not
-     brand: they never appear in the logo, they are never spread across the
-     page as accents, and black/white/red still carry everything that reads as
-     HOOD. Their entire remit is the services panels plus --color-linen as the
-     Why HOOD ground.
-
-     Every one of them is a panel background, so each is paired below with the
-     only text colour it is allowed to carry.
-     ------------------------------------------------------------------------ */
-
-  /* Warm off-white. Why HOOD's ground, and services panel 05. Takes --color-ink
-     at 15.2:1. */
-  --color-linen: #FFFFFF;
-
-  /* Services panel 03. Takes pure white at 4.75:1 — over 4.5:1, but with no
-     headroom at all, so white on sage never gets an opacity ramp. */
-  --color-sage: #687864;
-
-  /* Services panel 01. Takes white at 7.3:1, the one supporting colour with
-     room for a muted body tint. */
-  --color-teal: #035E7B;
-
-  /* Services panel 04. Takes --color-ink at 10.9:1. */
-  --color-sand: #D8C9B5;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -167,56 +130,29 @@
     padding-block: calc(var(--section-space) * 1.12);
   }
 
-  /* --------------------------------------------------------------------------
-     Heading ramp — three tiers, and the tier is the section's volume.
-
-     The page is meant to run bold, calm, loud, calm, calm, bold, bold, and the
-     heading size is most of what carries that. Every section shouting at once
-     is the same as none of them shouting.
-
-     The tiers separate hardest at the small end. On a 375px screen the middle
-     sections used to open at 32–38px, which on a 335px column is a four-line
-     stack before the copy even starts; the desktop maxima barely move, because
-     at 1280px there is room for the size and it reads as scale rather than as
-     volume.
-
-     All three are set tight — line-height at or under 1, letter-spacing past
-     -0.035em — because the logo is a compressed mark and headings set loose
-     do not look like it. The line-height loosens very slightly as the size
-     drops: .h-section is the tier most likely to run to three lines on a
-     phone, and at 27px it is the one place where 0.95 would start closing
-     descenders onto the ascenders below them.
-     -------------------------------------------------------------------------- */
-
-  /* Calm. The working sections — Why HOOD, Team, the services header. 27px on
-     a phone, 52px from 1280px up. */
+  /* One shared type rhythm for every section below the hero. */
   .h-section {
-    font-size: clamp(1.75rem, 1.15rem + 2.25vw, 3rem);
-    font-weight: 800;
-    line-height: 0.98;
-    letter-spacing: -0.038em;
+    font-size: clamp(2rem, 1.35rem + 2.4vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 
-  /* Strong, not loud. The two sections that are a single idea — Less to Manage
-     and the testimonials — where the section is meant to have weight but the
-     ground it sits on is what actually carries it. 32px → 60px. */
-  .h-statement {
-    font-size: clamp(2rem, 1.3rem + 2.8vw, 3.5rem);
-    font-weight: 800;
-    line-height: 0.96;
-    letter-spacing: -0.04em;
-    text-wrap: balance;
+  .intro-copy {
+    max-width: 58ch;
+    color: var(--color-muted);
+    font-size: clamp(1.125rem, 1.02rem + 0.45vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.3;
   }
 
-  /* Loud. The closing CTA, and nothing else — the hero sets its own size. This
-     is the tier the rest of the page steps down from. 38px → 72px. */
-  .h-display {
-    font-size: clamp(2.375rem, 1.15rem + 5vw, 4.5rem);
-    font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    text-wrap: balance;
+  .body-copy {
+    max-width: 66ch;
+    color: var(--color-muted);
+    font-size: clamp(1rem, 0.96rem + 0.16vw, 1.125rem);
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   /* A label on the heading below it, which is why the tracking is modest and
@@ -229,7 +165,7 @@
     font-weight: 600;
     line-height: 1.2;
     text-transform: uppercase;
-    letter-spacing: 0.075em;
+    letter-spacing: 0.09em;
     color: var(--color-brand-red);
   }
 

@@ -1,54 +1,53 @@
 ---
-/*
- * ============================================================================
- * NO REAL TESTIMONIALS YET.
- *
- * `testimonials` is empty on purpose. Nothing on this page is a real quote,
- * name, community, or review, and nothing here should be filled in with
- * plausible-sounding stand-ins — an invented reference on a staffing site is a
- * liability, not a design detail.
- *
- * To ship this section: add real, approved, attributed entries to the array
- * below. The layout switches from the placeholder slots to the real quotes on
- * its own; no markup changes are needed.
- * ============================================================================
- */
-
 interface Testimonial {
   quote: string;
   name: string;
   role: string;
   community: string;
+  location: string;
 }
 
-const testimonials: Testimonial[] = [];
+const testimonials: Testimonial[] = [
+  {
+    quote:
+      'Managing the pool had become incredibly stressful. We were dealing with break-ins, trash, and constant issues that kept piling up. Tim and Tamika came in and turned things around within a week. They keep me informed on the things I actually need to know, while handling the smaller issues themselves. I’d tell any HOA not to hesitate to hire them.',
+    name: 'Nicholas Mackey',
+    role: 'HOA President',
+    community: 'Falcon Heights HOA',
+    location: 'Forney, Texas',
+  },
+  // Placeholder copy pending Ashley’s approval; displayed normally for local review.
+  {
+    quote:
+      'HOOD has been a great partner to work with. Tim and Tamika are responsive, dependable, and proactive about handling issues before they become bigger problems. They communicate well, take ownership of the day-to-day details, and make things easier for both management and the communities we serve.',
+    name: 'Ashley Vandiver',
+    role: 'HOA Manager',
+    community: 'Legacy Southwest',
+    location: 'Plano, Texas · DFW',
+  },
+];
 
-const PLACEHOLDER_SLOTS = 2;
-
-/* Every level on this section is separated by size and weight, never by
-   opacity: on #DF231C nothing short of pure white clears 4.5:1, so white is
-   the only text colour the section gets. */
 ---
 
-<section class="section-lg bg-brand-red text-white">
+<section
+  id="testimonials"
+  class="section border-y border-white/15 bg-night text-white"
+>
   <div class="container-page">
-    <div class="lg:grid lg:grid-cols-12 lg:items-end lg:gap-x-16">
-      <div class="lg:col-span-7">
-        <span class="eyebrow eyebrow-on-red" data-reveal>What communities say</span>
-
-        <h2
-          class="h-statement mt-4 max-w-[16ch] lg:mt-5 lg:max-w-[14ch]"
-          data-reveal
-          style="--reveal-i:1"
-        >
+    <div class="max-w-[60rem]">
+      <div>
+        <span class="eyebrow eyebrow-on-dark" data-reveal>
+          Community confidence
+        </span>
+        <h2 class="h-section mt-2.5 max-w-[24ch]" data-reveal>
           Don’t take our word for it.
         </h2>
       </div>
 
       <p
-        class="mt-6 max-w-[40ch] text-[18px] leading-[1.6] lg:col-span-5 lg:mt-0 lg:pb-2 lg:text-[19px]"
+        class="mt-4 max-w-[58ch] text-[18px] font-medium leading-[1.4] text-white/70 sm:text-[20px] lg:text-[22px]"
         data-reveal
-        style="--reveal-i:2"
+        style="--reveal-i:1"
       >
         See what property managers and communities have said about working with
         HOOD.
@@ -57,39 +56,52 @@ const PLACEHOLDER_SLOTS = 2;
 
     {
       testimonials.length > 0 ? (
-        <div class="mt-14 grid gap-6 md:grid-cols-2 lg:mt-20 lg:gap-8">
-          {testimonials.map((testimonial) => (
-            <figure class="flex flex-col justify-between border border-white/75 p-8 lg:p-10">
-              <blockquote class="text-[20px] font-medium leading-[1.4] tracking-[-0.02em] lg:text-[23px]">
-                “{testimonial.quote}”
+        <div class="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-2 lg:gap-6">
+          {testimonials.map((testimonial, index) => (
+            <figure
+              class="group relative isolate flex h-full flex-col overflow-hidden border border-white/20 bg-white/[0.05] p-6 transition-[transform,border-color,background-color] duration-300 ease-out hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.07] motion-reduce:transform-none motion-reduce:transition-none sm:p-7"
+              data-reveal
+              style={`--reveal-i:${index}`}
+            >
+              <span
+                class="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-brand-red transition-transform duration-300 ease-out group-hover:scale-x-100 motion-reduce:transition-none"
+                aria-hidden="true"></span>
+
+              <div class="relative z-[1]">
+                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-red-soft">
+                  Customer story
+                </p>
+
+                <div class="mt-4">
+                  <p class="text-[20px] font-bold leading-tight tracking-[-0.025em] sm:text-[22px]">
+                    {testimonial.community}
+                  </p>
+                  <p class="mt-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-white/55">
+                    {testimonial.location}
+                  </p>
+                </div>
+              </div>
+
+              <blockquote class="relative z-[1] mt-7 text-[16px] font-medium leading-[1.55] tracking-[-0.015em] text-white sm:text-[17px] lg:text-[17px]">
+                {testimonial.quote}
               </blockquote>
-              <figcaption class="mt-8 text-[13px] font-semibold uppercase tracking-[0.1em]">
-                {testimonial.name}
-                <span class="block font-normal normal-case tracking-normal">
-                  {testimonial.role}, {testimonial.community}
+
+              <figcaption class="relative z-[1] mt-8 border-t border-white/20 pt-5 pr-20 lg:mt-auto">
+                <strong class="block text-[15px] font-bold leading-tight">
+                  {testimonial.name}
+                </strong>
+                <span class="mt-1 block text-[13px] leading-snug text-white/60">
+                  {testimonial.role}
                 </span>
               </figcaption>
+
+              <span
+                class="pointer-events-none absolute -bottom-24 right-3 z-0 select-none text-[9rem] font-extrabold leading-none text-brand-red-soft opacity-[0.14] sm:-bottom-28 sm:text-[10rem]"
+                aria-hidden="true">”</span>
             </figure>
           ))}
         </div>
-      ) : (
-        <div class="mt-14 grid gap-6 md:grid-cols-2 lg:mt-20 lg:gap-8">
-          {Array.from({ length: PLACEHOLDER_SLOTS }, (_, index) => (
-            <div class="flex min-h-[240px] flex-col justify-between border border-dashed border-white/75 p-8 lg:p-10">
-              <p class="text-[13px] font-semibold uppercase tracking-[0.1em]">
-                Testimonial {index + 1} — awaiting approved quote
-              </p>
-              <p class="mt-6 text-[17px] leading-[1.6]">
-                A real, attributed quote from a property manager or community
-                goes here. Nothing has been written for this slot.
-              </p>
-              <p class="mt-8 text-[13px] font-semibold uppercase tracking-[0.1em]">
-                Name, role, community
-              </p>
-            </div>
-          ))}
-        </div>
-      )
+      ) : null
     }
   </div>
 </section>

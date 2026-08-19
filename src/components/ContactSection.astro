@@ -5,8 +5,8 @@
  * (Astro Actions, a form endpoint, or an email service) and add server-side
  * validation plus a spam guard.
  *
- * Ink rather than the near-black used by the services section, so the two dark
- * panels on the page are not the same panel twice.
+ * The CTA is the form heading rather than a separate promotional panel. This
+ * keeps the close direct: invitation, then fields.
  */
 
 const fields = [
@@ -46,101 +46,103 @@ const inputClass =
   'mt-2 w-full rounded-sm border border-white/40 bg-white/[0.04] px-4 py-3.5 text-[16px] text-white placeholder:text-white/35 transition-colors hover:border-white/55 focus:border-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 ---
 
-<section id="contact" class="section-lg bg-ink text-white">
-  <div class="container-page">
-    {/* The heading block is centred; the form under it is not, because a
-        centred label sitting above a full-width field reads as decoration
-        rather than as the name of the thing below it. */}
-    <div class="mx-auto max-w-[46rem] text-center">
-      <span class="eyebrow eyebrow-on-dark" data-reveal>What can we take off your plate?</span>
+<section id="contact" class="contact-form-section text-white" aria-labelledby="contact-form-title">
+  <div class="container-page py-14 sm:py-16 lg:py-20">
+    <div class="mx-auto max-w-[50rem]">
+      <div class="border-b border-white/15 pb-8 text-center sm:pb-10">
+        <h2
+          id="contact-form-title"
+          class="text-balance text-[clamp(2rem,1.15rem+4.2vw,4.75rem)] font-extrabold leading-[0.96] tracking-[-0.02em]"
+          data-reveal
+        >
+          Ready to team up?
+        </h2>
+      </div>
 
-      <h2 class="h-display mt-4" data-reveal style="--reveal-i:1">
-        Tell us what your community needs.
-      </h2>
-
-      <p
-        class="mx-auto mt-5 max-w-[54ch] text-[18px] leading-[1.7] text-white/75 lg:text-[19px]"
-        data-reveal
-        style="--reveal-i:2"
+      <form
+        id="contact-form"
+        class="mt-8 grid scroll-mt-24 gap-5 text-left sm:grid-cols-2 sm:gap-6"
       >
-        Whether it’s pool staffing, a cleanup, a small haul, power washing, or
-        something else that needs to get handled, we’d be happy to talk it
-        through.
-      </p>
+        {
+          fields.map((field) => (
+            <div class={field.id === 'property' ? 'sm:col-span-2' : ''}>
+              <label class={labelClass} for={field.id}>
+                {field.label}
+                {!field.required && (
+                  <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
+                    (optional)
+                  </span>
+                )}
+              </label>
+              <input
+                id={field.id}
+                name={field.id}
+                type={field.type}
+                autocomplete={field.autocomplete}
+                required={field.required}
+                class={inputClass}
+              />
+            </div>
+          ))
+        }
 
-      {/* The close of the page is the CTA, not the form. Anyone who already
-          knows what they want gets a button; the form is what they land on,
-          one screen-length down, for anyone who would rather just write it
-          out. Same destination, two speeds. */}
-      <a
-        href="#contact-form"
-        class="btn btn-primary mt-8 text-[17px] sm:px-10 sm:py-4"
-        data-reveal
-        style="--reveal-i:3"
-      >
-        Talk to HOOD
-      </a>
-    </div>
-
-    {/* Quieter than the block above it, and marked as its own step so the
-        fields do not read as part of the headline. */}
-    <div class="mx-auto mt-14 max-w-[46rem] border-t border-white/15 pt-10 lg:mt-16 lg:pt-12">
-      <p class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70">
-        Or send us the details
-      </p>
-    </div>
-
-    <form
-      id="contact-form"
-      class="mx-auto mt-7 grid max-w-[46rem] gap-6 text-left sm:grid-cols-2"
-    >
-      {
-        fields.map((field) => (
-          <div class={field.id === 'property' ? 'sm:col-span-2' : ''}>
-            <label class={labelClass} for={field.id}>
-              {field.label}
-              {!field.required && (
-                <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
-                  (optional)
-                </span>
-              )}
-            </label>
-            <input
-              id={field.id}
-              name={field.id}
-              type={field.type}
-              autocomplete={field.autocomplete}
-              required={field.required}
-              class={inputClass}
-            />
+        <div class="sm:col-span-2">
+          <label class={labelClass} for="need">What do you need help with?</label>
+          <div class="relative">
+            {/* color-scheme keeps the native option list dark instead of white-on-white */}
+            <select
+              id="need"
+              name="need"
+              required
+              class={`${inputClass} appearance-none pr-12`}
+              style="color-scheme: dark;"
+            >
+              <option value="">Select an option</option>
+              {needs.map((need) => <option value={need}>{need}</option>)}
+            </select>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 16 16"
+              class="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-white"
+            >
+              <path
+                d="m3 6 5 5 5-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+              ></path>
+            </svg>
           </div>
-        ))
-      }
+        </div>
 
-      <div class="sm:col-span-2">
-        <label class={labelClass} for="need">What do you need help with?</label>
-        {/* color-scheme keeps the native option list dark instead of white-on-white */}
-        <select id="need" name="need" required class={inputClass} style="color-scheme: dark;">
-          <option value="">Select an option</option>
-          {needs.map((need) => <option value={need}>{need}</option>)}
-        </select>
-      </div>
+        <div class="sm:col-span-2">
+          <label class={labelClass} for="message">
+            Message
+            <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
+              (optional)
+            </span>
+          </label>
+          <textarea id="message" name="message" rows="4" class={inputClass}></textarea>
+        </div>
 
-      <div class="sm:col-span-2">
-        <label class={labelClass} for="message">
-          Message
-          <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
-            (optional)
-          </span>
-        </label>
-        <textarea id="message" name="message" rows="5" class={inputClass}></textarea>
-      </div>
-
-      <div class="sm:col-span-2">
-        <button type="submit" class="btn btn-primary w-full text-[17px] sm:w-auto sm:px-10 sm:py-4">
-          Send request
-        </button>
-      </div>
-    </form>
+        <div class="sm:col-span-2">
+          <button
+            type="submit"
+            class="btn btn-primary w-full text-[17px] sm:w-auto sm:px-10 sm:py-4"
+          >
+            Send request
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </section>
+
+<style>
+  .contact-form-section {
+    background-color: #2b2724;
+    border-top: 1px solid rgb(255 255 255 / 0.08);
+  }
+</style>

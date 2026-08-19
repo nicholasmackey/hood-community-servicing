@@ -19,17 +19,13 @@ const nav = [
 
 const year = new Date().getFullYear();
 
-/*
- * Dark, like the CTA directly above it. Everywhere else on the page no two
- * neighbouring sections share a ground, and this is the one deliberate
- * exception: the close is meant to read as a single block the page lands on,
- * so the footer steps from ink to night rather than resetting to light. The
- * step is small enough to be a seam and large enough to be visible.
- */
+/* A clear charcoal step away from the near-black form above. */
 ---
 
-<footer class="bg-night text-white">
-  <div class="container-page py-14 lg:py-16">
+<footer class="footer text-white">
+  <Logo variant="mark" alt="" class="footer__watermark" />
+
+  <div class="container-page relative z-[1] py-12 lg:py-14">
     <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
       <div>
         <Logo variant="reverse" class="h-9 w-auto" alt="HOOD Community Servicing" />
@@ -83,7 +79,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div
-      class="mt-12 flex flex-col gap-3 border-t border-white/15 pt-6 text-[14px] text-white/70 sm:flex-row sm:items-center sm:justify-between"
+      class="mt-10 flex flex-col gap-3 border-t border-white/15 pt-6 text-[14px] text-white/70 sm:flex-row sm:items-center sm:justify-between"
     >
       <p>&copy; {year} HOOD Community Servicing, LLC. All rights reserved.</p>
       <!-- TODO: point at the real privacy policy once it exists. -->
@@ -91,3 +87,35 @@ const year = new Date().getFullYear();
     </div>
   </div>
 </footer>
+
+<style>
+  .footer {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: #474440;
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+  }
+
+  .footer :global(.footer__watermark) {
+    position: absolute;
+    right: clamp(-18rem, -12vw, -8rem);
+    top: 58%;
+    z-index: 0;
+    width: clamp(46rem, 78vw, 72rem);
+    height: auto;
+    max-width: none;
+    transform: translateY(-50%);
+    opacity: 0.18;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  @media (max-width: 639px) {
+    .footer :global(.footer__watermark) {
+      right: -22rem;
+      top: 62%;
+      width: 50rem;
+    }
+  }
+</style>

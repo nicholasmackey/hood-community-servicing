@@ -1,0 +1,425 @@
+---
+interface Props {
+  modelUrl?: string;
+  label?: string;
+}
+
+const {
+  modelUrl = '/models/hood-mark.glb',
+  label = 'Three-dimensional HOOD mark',
+} = Astro.props;
+---
+
+<div class="mark" data-hood-mark-3d data-model-url={modelUrl} role="img" aria-label={label}>
+  <canvas class="mark__canvas" data-mark-canvas aria-hidden="true"></canvas>
+  <span class="mark__fallback" aria-hidden="true"></span>
+</div>
+
+<style>
+  .mark {
+    position: relative;
+    width: 100%;
+    height: clamp(250px, 64vw, 310px);
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .mark__canvas,
+  .mark__fallback {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mark__canvas {
+    display: block;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 320ms ease;
+  }
+
+  .mark__fallback {
+    margin: auto;
+    width: min(52%, 210px);
+    height: auto;
+    aspect-ratio: 1;
+    background-color: var(--color-brand-red);
+    -webkit-mask: url('/hood-mark.svg') center / contain no-repeat;
+    mask: url('/hood-mark.svg') center / contain no-repeat;
+    transition: opacity 220ms ease;
+  }
+
+  .mark[data-loaded] .mark__canvas {
+    opacity: 1;
+  }
+
+  .mark[data-loaded] .mark__fallback {
+    opacity: 0;
+  }
+
+  @media (min-width: 768px) {
+    .mark {
+      height: clamp(330px, 35vw, 430px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mark__canvas {
+      display: none;
+    }
+
+    .mark__fallback {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  document.querySelectorAll<HTMLElement>('[data-hood-mark-3d]').forEach((root) => {
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-mark-canvas]');
+    const modelUrl = root.dataset.modelUrl;
+    if (!canvas || !modelUrl) return;
+
+    let initialized = false;
+
+    const initialize = async () => {
+      if (initialized || reducedMotion.matches) return;
+      initialized = true;
+
+      try {
+        const [THREE, { GLTFLoader }] = await Promise.all([
+          import('three'),
+          import('three/addons/loaders/GLTFLoader.js'),
+        ]);
+
+        const renderer = new THREE.WebGLRenderer({
+          canvas,
+          alpha: true,
+          antialias: true,
+          powerPreference: 'high-performance',
+        });
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.NoToneMapping;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(29, 1, 0.1, 100);
+        const cameraDirection = new THREE.Vector3(0.34, 0.18, 5.35).normalize();
+        const mobileViewport = window.matchMedia('(max-width: 767px)');
+
+        // Neutral lights reveal the red material's front and side planes. No
+        // coloured rim or simulated shadow is used.
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x343434, 1));
+
+        const key = new THREE.DirectionalLight(0xffffff, 1.5);
+        key.position.set(4.2, 4.8, 5.5);
+        scene.add(key);
+
+        const side = new THREE.DirectionalLight(0xffffff, 0.85);
+        side.position.set(-4.5, -1.4, 2.8);
+        scene.add(side);
+
+        const back = new THREE.DirectionalLight(0xffffff, 0.32);
+        back.position.set(-2, 3, -4);
+        scene.add(back);
+
+        const holder = new THREE.Group();
+        holder.rotation.set(-0.2, -0.52, -0.045);
+        holder.position.set(0.15, -0.14, 0);
+        holder.scale.setScalar(mobileViewport.matches ? 0.84 : 0.9);
+        scene.add(holder);
+
+        const loader = new GLTFLoader();
+        const gltf = await loader.loadAsync(modelUrl);
+        const model = gltf.scene;
+        const importedMaterials = new Set<InstanceType<typeof THREE.Material>>();
+        const hoodMaterial = new THREE.MeshStandardMaterial({
+          color: 0xdf231c,
+          metalness: 0.03,
+          roughness: 0.72,
+        });
+
+        model.traverse((child) => {
+          if (!(child instanceof THREE.Mesh)) return;
+
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((material) => importedMaterials.add(material));
+          child.material = hoodMaterial;
+        });
+        importedMaterials.forEach((material) => material.dispose());
+
+        const bounds = new THREE.Box3().setFromObject(model);
+        const center = bounds.getCenter(new THREE.Vector3());
+        const size = bounds.getSize(new THREE.Vector3());
+        const modelScale = 2.7 / Math.max(size.x, size.y, size.z);
+        model.scale.setScalar(modelScale);
+        model.position.copy(center).multiplyScalar(-modelScale);
+        holder.add(model);
+
+        const halfSize = size.clone().multiplyScalar(modelScale * 0.5);
+        const modelCorners = [-1, 1].flatMap((x) =>
+          [-1, 1].flatMap((y) =>
+            [-1, 1].map(
+              (z) => new THREE.Vector3(halfSize.x * x, halfSize.y * y, halfSize.z * z),
+            ),
+          ),
+        );
+
+        const getScaleRange = () =>
+          mobileViewport.matches
+            ? { entry: 0.84, rest: 1.02 }
+            : { entry: 0.9, rest: 1.1 };
+
+        const getFramingPoints = () => {
+          const points: InstanceType<typeof THREE.Vector3>[] = [];
+          const matrix = new THREE.Matrix4();
+          const quaternion = new THREE.Quaternion();
+          const position = new THREE.Vector3();
+          const scale = new THREE.Vector3();
+          const rotation = new THREE.Euler();
+          const scaleRange = getScaleRange();
+          const pointerSamples = finePointer.matches ? [-1, 1] : [0];
+
+          // Sample the entire authored motion path plus the small pointer
+          // allowance. Framing this envelope prevents a safe resting pose from
+          // becoming cropped halfway through the scroll transition.
+          for (let step = 0; step <= 20; step += 1) {
+            const progress = step / 20;
+            const baseRotationX = THREE.MathUtils.lerp(-0.2, -0.09, progress);
+            const baseRotationY = THREE.MathUtils.lerp(-0.52, -0.08, progress);
+            const baseRotationZ = THREE.MathUtils.lerp(-0.045, 0.01, progress);
+            const modelMotionScale = THREE.MathUtils.lerp(
+              scaleRange.entry,
+              scaleRange.rest,
+              progress,
+            );
+            position.set(
+              THREE.MathUtils.lerp(0.15, -0.08, progress),
+              THREE.MathUtils.lerp(-0.14, 0.1, progress),
+              0,
+            );
+            scale.setScalar(modelMotionScale);
+
+            for (const pointerSampleX of pointerSamples) {
+              for (const pointerSampleY of pointerSamples) {
+                rotation.set(
+                  baseRotationX + pointerSampleY * 0.035,
+                  baseRotationY + pointerSampleX * 0.055,
+                  baseRotationZ + pointerSampleX * 0.012,
+                );
+                quaternion.setFromEuler(rotation);
+                matrix.compose(position, quaternion, scale);
+                modelCorners.forEach((corner) => points.push(corner.clone().applyMatrix4(matrix)));
+              }
+            }
+          }
+
+          return points;
+        };
+
+        const frameCamera = () => {
+          const points = getFramingPoints();
+          const framingCenter = new THREE.Box3().setFromPoints(points).getCenter(new THREE.Vector3());
+          const targetNdcExtent = 0.78; // 11% clear space on each canvas edge.
+
+          const projectedExtentAt = (distance: number) => {
+            camera.position.copy(framingCenter).addScaledVector(cameraDirection, distance);
+            camera.lookAt(framingCenter);
+            camera.updateMatrixWorld(true);
+            camera.updateProjectionMatrix();
+
+            let extent = 0;
+            for (const point of points) {
+              const cameraPoint = point.clone().applyMatrix4(camera.matrixWorldInverse);
+              if (cameraPoint.z >= -camera.near) return Number.POSITIVE_INFINITY;
+              const projected = point.clone().project(camera);
+              extent = Math.max(extent, Math.abs(projected.x), Math.abs(projected.y));
+            }
+            return extent;
+          };
+
+          let nearDistance = 0.5;
+          let farDistance = 4;
+          while (projectedExtentAt(farDistance) > targetNdcExtent && farDistance < 50) {
+            farDistance *= 1.5;
+          }
+
+          // Solve the perspective fit against the actual responsive aspect.
+          for (let iteration = 0; iteration < 24; iteration += 1) {
+            const distance = (nearDistance + farDistance) / 2;
+            if (projectedExtentAt(distance) > targetNdcExtent) nearDistance = distance;
+            else farDistance = distance;
+          }
+
+          camera.position.copy(framingCenter).addScaledVector(cameraDirection, farDistance);
+          camera.lookAt(framingCenter);
+          camera.updateMatrixWorld(true);
+          camera.updateProjectionMatrix();
+        };
+
+        let frame = 0;
+        let active = false;
+        let pointerX = 0;
+        let pointerY = 0;
+        let targetX = 0.15;
+        let targetY = -0.14;
+        let targetScale = getScaleRange().entry;
+        let targetRotationX = -0.2;
+        let targetRotationY = -0.52;
+        let targetRotationZ = -0.045;
+
+        const resize = () => {
+          const { width, height } = root.getBoundingClientRect();
+          if (!width || !height) return;
+          renderer.setSize(width, height, false);
+          camera.aspect = width / height;
+          frameCamera();
+        };
+
+        const measureScroll = () => {
+          const rect = root.getBoundingClientRect();
+          const rawProgress = THREE.MathUtils.clamp(
+            (window.innerHeight - rect.top) / (window.innerHeight + rect.height),
+            0,
+            1,
+          );
+          const progress = THREE.MathUtils.smoothstep(rawProgress, 0.08, 0.68);
+
+          // About 25 degrees from entry to rest, paired with a concise scale
+          // and position change. It has a clear destination and never spins.
+          targetRotationY = THREE.MathUtils.lerp(-0.52, -0.08, progress);
+          targetRotationX = THREE.MathUtils.lerp(-0.2, -0.09, progress);
+          targetRotationZ = THREE.MathUtils.lerp(-0.045, 0.01, progress);
+          const scaleRange = getScaleRange();
+          targetScale = THREE.MathUtils.lerp(scaleRange.entry, scaleRange.rest, progress);
+          targetX = THREE.MathUtils.lerp(0.15, -0.08, progress);
+          targetY = THREE.MathUtils.lerp(-0.14, 0.1, progress);
+          key.position.x = THREE.MathUtils.lerp(4.2, 3.1, progress);
+        };
+
+        const render = () => {
+          frame = 0;
+          if (!active) return;
+
+          const nextRotationY = targetRotationY + pointerX * 0.055;
+          const nextRotationX = targetRotationX + pointerY * 0.035;
+          const nextRotationZ = targetRotationZ + pointerX * 0.012;
+          const movement = Math.max(
+            Math.abs(holder.rotation.x - nextRotationX),
+            Math.abs(holder.rotation.y - nextRotationY),
+            Math.abs(holder.rotation.z - nextRotationZ),
+            Math.abs(holder.position.x - targetX),
+            Math.abs(holder.position.y - targetY),
+            Math.abs(holder.scale.x - targetScale),
+          );
+
+          holder.rotation.x = THREE.MathUtils.lerp(holder.rotation.x, nextRotationX, 0.115);
+          holder.rotation.y = THREE.MathUtils.lerp(holder.rotation.y, nextRotationY, 0.115);
+          holder.rotation.z = THREE.MathUtils.lerp(holder.rotation.z, nextRotationZ, 0.115);
+          holder.position.x = THREE.MathUtils.lerp(holder.position.x, targetX, 0.115);
+          holder.position.y = THREE.MathUtils.lerp(holder.position.y, targetY, 0.115);
+          holder.scale.setScalar(THREE.MathUtils.lerp(holder.scale.x, targetScale, 0.115));
+
+          renderer.render(scene, camera);
+          if (movement > 0.0007) frame = requestAnimationFrame(render);
+        };
+
+        const requestRender = () => {
+          if (active && !frame) frame = requestAnimationFrame(render);
+        };
+
+        const start = () => {
+          if (active || reducedMotion.matches) return;
+          active = true;
+          resize();
+          measureScroll();
+          requestRender();
+        };
+
+        const stop = () => {
+          active = false;
+          if (frame) cancelAnimationFrame(frame);
+          frame = 0;
+        };
+
+        resize();
+        renderer.render(scene, camera);
+        root.toggleAttribute('data-loaded', true);
+
+        reducedMotion.addEventListener('change', (event) => {
+          root.toggleAttribute('data-loaded', !event.matches);
+          if (event.matches) stop();
+          else {
+            const rect = root.getBoundingClientRect();
+            if (rect.bottom > 0 && rect.top < window.innerHeight) start();
+          }
+        });
+
+        const visibilityObserver = new IntersectionObserver(
+          ([entry]) => (entry.isIntersecting ? start() : stop()),
+          { rootMargin: '10% 0px', threshold: 0 },
+        );
+        visibilityObserver.observe(root);
+
+        const resizeObserver = new ResizeObserver(() => {
+          resize();
+          measureScroll();
+          requestRender();
+        });
+        resizeObserver.observe(root);
+
+        mobileViewport.addEventListener('change', () => {
+          resize();
+          measureScroll();
+          requestRender();
+        });
+
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (!active) return;
+            measureScroll();
+            requestRender();
+          },
+          { passive: true },
+        );
+
+        if (finePointer.matches) {
+          root.addEventListener('pointermove', (event) => {
+            const rect = root.getBoundingClientRect();
+            pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+            pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+            requestRender();
+          });
+          root.addEventListener('pointerleave', () => {
+            pointerX = 0;
+            pointerY = 0;
+            requestRender();
+          });
+        }
+      } catch (error) {
+        initialized = false;
+        console.warn('HOOD 3D mark could not be loaded; showing the static mark.', error);
+      }
+    };
+
+    const loadObserver = new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting || reducedMotion.matches) return;
+        observer.disconnect();
+        void initialize();
+      },
+      { rootMargin: '320px 0px', threshold: 0 },
+    );
+    loadObserver.observe(root);
+
+    reducedMotion.addEventListener('change', () => {
+      if (!reducedMotion.matches) void initialize();
+    });
+  });
+</script>
