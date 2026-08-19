@@ -93,13 +93,38 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
   document.querySelectorAll<HTMLElement>('[data-hood-mark-3d]').forEach((root) => {
     const canvas = root.querySelector<HTMLCanvasElement>('[data-mark-canvas]');
     const modelUrl = root.dataset.modelUrl;
-    if (!canvas || !modelUrl) return;
+
+    if (!canvas) {
+      console.error('[HOOD 3D mark] Canvas is missing; the static fallback will remain visible.');
+      return;
+    }
+
+    if (!modelUrl) {
+      root.dataset.modelState = 'error';
+      console.error(
+        '[HOOD 3D mark] data-model-url is missing; the static fallback will remain visible.',
+      );
+      return;
+    }
+
+    let resolvedModelUrl: URL;
+    try {
+      resolvedModelUrl = new URL(modelUrl, window.location.href);
+    } catch (error) {
+      root.dataset.modelState = 'error';
+      console.error(
+        `[HOOD 3D mark] Invalid model URL "${modelUrl}"; the static fallback will remain visible.`,
+        error,
+      );
+      return;
+    }
 
     let initialized = false;
 
     const initialize = async () => {
       if (initialized || reducedMotion.matches) return;
       initialized = true;
+      root.dataset.modelState = 'loading';
 
       try {
         const [THREE, { GLTFLoader }] = await Promise.all([
@@ -146,7 +171,17 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
         scene.add(holder);
 
         const loader = new GLTFLoader();
-        const gltf = await loader.loadAsync(modelUrl);
+        const gltf = await new Promise<Awaited<ReturnType<typeof loader.loadAsync>>>(
+          (resolve, reject) => {
+            loader.load(resolvedModelUrl.href, resolve, undefined, (error) => {
+              console.error(
+                `[HOOD 3D mark] GLTFLoader failed to load ${resolvedModelUrl.href}`,
+                error,
+              );
+              reject(error);
+            });
+          },
+        );
         const model = gltf.scene;
         const importedMaterials = new Set<InstanceType<typeof THREE.Material>>();
         const hoodMaterial = new THREE.MeshStandardMaterial({
@@ -360,6 +395,7 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
 
         resize();
         renderer.render(scene, camera);
+        root.dataset.modelState = 'loaded';
         root.toggleAttribute('data-loaded', true);
 
         reducedMotion.addEventListener('change', (event) => {
@@ -415,7 +451,11 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
         }
       } catch (error) {
         initialized = false;
-        console.warn('HOOD 3D mark could not be loaded; showing the static mark.', error);
+        root.dataset.modelState = 'error';
+        console.error(
+          `[HOOD 3D mark] Initialization failed for ${resolvedModelUrl.href}; the static fallback will remain visible.`,
+          error,
+        );
       }
     };
 
