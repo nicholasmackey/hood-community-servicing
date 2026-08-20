@@ -3,6 +3,7 @@ import Logo from './Logo.astro';
 import { withBase } from '../utils/paths';
 
 const homeHref = withBase('/');
+const markSrc = withBase('/hood-mark.svg');
 
 // Page order. The menu's stagger keys off this array's index, so the rows
 // resolve top to bottom in the order the sections themselves appear.
@@ -47,12 +48,21 @@ const contact = {
 <header class="site-header sticky top-0 z-50 border-b border-border bg-background">
   <div class="container-page flex h-[72px] items-center justify-between gap-6 lg:h-20">
     {/*
-      Both lockups are stacked in one grid cell and cross-faded, because the
-      mark is an <img> rather than inline SVG and so cannot inherit a colour.
-      The reverse copy is what keeps the wordmark legible once the ink panel is
-      up behind the bar.
+      Both logo lockups are stacked in one grid cell and cross-faded because
+      the SVG artwork is served through <img> elements and cannot inherit a
+      colour. The red mark is drawn separately beside them, while the reverse
+      lockup keeps the logo legible once the ink panel is up behind the bar.
     */}
-    <a href={homeHref} class="brand-link shrink-0" aria-label="HOOD Community Servicing — home">
+    <a
+      href={homeHref}
+      class="brand-link inline-flex shrink-0 items-center gap-2.5"
+      aria-label="HOOD Community Servicing — home"
+    >
+      <span
+        class="brand-mark block shrink-0"
+        style={`--brand-mark-url: url("${markSrc}")`}
+        aria-hidden="true"
+      ></span>
       <span class="brand-swap grid">
         <Logo class="brand-primary h-8 w-auto lg:h-9" alt="" />
         <Logo variant="reverse" class="brand-reverse h-8 w-auto lg:h-9" alt="" />
@@ -293,6 +303,21 @@ const contact = {
   .brand-swap :global(img) {
     grid-area: 1 / 1;
     transition: opacity 300ms ease;
+  }
+
+  .brand-mark {
+    width: 3.5rem;
+    height: 2rem;
+    background-color: var(--color-brand-red);
+    -webkit-mask: var(--brand-mark-url) center / 100% auto no-repeat;
+    mask: var(--brand-mark-url) center / 100% auto no-repeat;
+  }
+
+  @media (min-width: 64rem) {
+    .brand-mark {
+      width: 3.9375rem;
+      height: 2.25rem;
+    }
   }
 
   .brand-swap :global(.brand-reverse) {
