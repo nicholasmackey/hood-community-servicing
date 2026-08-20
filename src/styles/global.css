@@ -25,7 +25,7 @@
 
 /* Non-utility tokens: layout rhythm. */
 :root {
-  --container-max: 1280px;
+  --container-max: 1440px;
   --gutter: 20px;
   --section-space: 48px;
 

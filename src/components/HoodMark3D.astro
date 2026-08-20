@@ -32,6 +32,7 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
     width: 100%;
     height: clamp(250px, 64vw, 310px);
     overflow: hidden;
+    outline: none;
     background: transparent;
   }
 
@@ -48,6 +49,17 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
     background: transparent;
     opacity: 0;
     transition: opacity 320ms ease;
+  }
+
+  .mark[data-loaded] {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .mark[data-dragging] {
+    cursor: grabbing;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .mark__fallback {
@@ -221,6 +233,14 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
             ? { entry: 0.84, rest: 1.02 }
             : { entry: 0.9, rest: 1.1 };
 
+        const pointerMotion = {
+          positionX: 0.22,
+          positionY: 0.16,
+          rotationX: 0.18,
+          rotationY: 0.32,
+          rotationZ: 0.04,
+        };
+
         const getFramingPoints = () => {
           const points: InstanceType<typeof THREE.Vector3>[] = [];
           const matrix = new THREE.Matrix4();
@@ -230,12 +250,17 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
           const rotation = new THREE.Euler();
           const scaleRange = getScaleRange();
           const pointerSamples = finePointer.matches ? [-1, 1] : [0];
+          const spinYawSamples = Array.from({ length: 8 }, (_, index) =>
+            (index / 8) * Math.PI * 2,
+          );
+          const spinPitchSamples = Array.from({ length: 8 }, (_, index) =>
+            (index / 8) * Math.PI * 2,
+          );
 
-          // Sample the entire authored motion path plus the small pointer
-          // allowance. Framing this envelope prevents a safe resting pose from
-          // becoming cropped halfway through the scroll transition.
-          for (let step = 0; step <= 20; step += 1) {
-            const progress = step / 20;
+          // Sample the authored motion path, cursor response, and the complete
+          // interactive yaw range so a dragged mark stays inside the canvas.
+          for (let step = 0; step <= 12; step += 1) {
+            const progress = step / 12;
             const baseRotationX = THREE.MathUtils.lerp(-0.2, -0.09, progress);
             const baseRotationY = THREE.MathUtils.lerp(-0.52, -0.08, progress);
             const baseRotationZ = THREE.MathUtils.lerp(-0.045, 0.01, progress);
@@ -244,23 +269,32 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
               scaleRange.rest,
               progress,
             );
-            position.set(
-              THREE.MathUtils.lerp(0.15, -0.08, progress),
-              THREE.MathUtils.lerp(-0.14, 0.1, progress),
-              0,
-            );
             scale.setScalar(modelMotionScale);
 
             for (const pointerSampleX of pointerSamples) {
               for (const pointerSampleY of pointerSamples) {
-                rotation.set(
-                  baseRotationX + pointerSampleY * 0.035,
-                  baseRotationY + pointerSampleX * 0.055,
-                  baseRotationZ + pointerSampleX * 0.012,
+                position.set(
+                  THREE.MathUtils.lerp(0.15, -0.08, progress) +
+                    pointerSampleX * pointerMotion.positionX,
+                  THREE.MathUtils.lerp(-0.14, 0.1, progress) -
+                    pointerSampleY * pointerMotion.positionY,
+                  0,
                 );
-                quaternion.setFromEuler(rotation);
-                matrix.compose(position, quaternion, scale);
-                modelCorners.forEach((corner) => points.push(corner.clone().applyMatrix4(matrix)));
+
+                for (const spinYaw of spinYawSamples) {
+                  for (const spinPitch of spinPitchSamples) {
+                    rotation.set(
+                      baseRotationX + pointerSampleY * pointerMotion.rotationX + spinPitch,
+                      baseRotationY + pointerSampleX * pointerMotion.rotationY + spinYaw,
+                      baseRotationZ + pointerSampleX * pointerMotion.rotationZ,
+                    );
+                    quaternion.setFromEuler(rotation);
+                    matrix.compose(position, quaternion, scale);
+                    modelCorners.forEach((corner) =>
+                      points.push(corner.clone().applyMatrix4(matrix)),
+                    );
+                  }
+                }
               }
             }
           }
@@ -271,7 +305,9 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
         const frameCamera = () => {
           const points = getFramingPoints();
           const framingCenter = new THREE.Box3().setFromPoints(points).getCenter(new THREE.Vector3());
-          const targetNdcExtent = 0.78; // 11% clear space on each canvas edge.
+          // Fill 25% more of the canvas than the original framing while still
+          // fitting the complete interactive rotation envelope.
+          const targetNdcExtent = 0.975;
 
           const projectedExtentAt = (distance: number) => {
             camera.position.copy(framingCenter).addScaledVector(cameraDirection, distance);
@@ -318,6 +354,34 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
         let targetRotationX = -0.2;
         let targetRotationY = -0.52;
         let targetRotationZ = -0.045;
+        const spinQuaternion = new THREE.Quaternion();
+        const restingSpinQuaternion = new THREE.Quaternion();
+        const baseQuaternion = new THREE.Quaternion();
+        const targetQuaternion = new THREE.Quaternion();
+        const deltaQuaternion = new THREE.Quaternion();
+        const interactiveRotation = new THREE.Euler(0, 0, 0, 'YXZ');
+        const baseRotation = new THREE.Euler();
+        let spinVelocityX = 0;
+        let spinVelocityY = 0;
+        let dragging = false;
+        let dragPointerId = -1;
+        let lastDragX = 0;
+        let lastDragY = 0;
+        let lastDragTime = 0;
+        let returnTimer = 0;
+        let returningToRest = false;
+
+        const applySpinDelta = (pitch: number, yaw: number) => {
+          interactiveRotation.set(pitch, yaw, 0);
+          deltaQuaternion.setFromEuler(interactiveRotation);
+          spinQuaternion.premultiply(deltaQuaternion).normalize();
+        };
+
+        const cancelReturnToRest = () => {
+          if (returnTimer) window.clearTimeout(returnTimer);
+          returnTimer = 0;
+          returningToRest = false;
+        };
 
         const resize = () => {
           const { width, height } = root.getBoundingClientRect();
@@ -337,7 +401,7 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
           const progress = THREE.MathUtils.smoothstep(rawProgress, 0.08, 0.68);
 
           // About 25 degrees from entry to rest, paired with a concise scale
-          // and position change. It has a clear destination and never spins.
+          // and position change. User-controlled rotation is layered on top.
           targetRotationY = THREE.MathUtils.lerp(-0.52, -0.08, progress);
           targetRotationX = THREE.MathUtils.lerp(-0.2, -0.09, progress);
           targetRotationZ = THREE.MathUtils.lerp(-0.045, 0.01, progress);
@@ -352,31 +416,67 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
           frame = 0;
           if (!active) return;
 
-          const nextRotationY = targetRotationY + pointerX * 0.055;
-          const nextRotationX = targetRotationX + pointerY * 0.035;
-          const nextRotationZ = targetRotationZ + pointerX * 0.012;
+          if (!dragging) {
+            if (returningToRest) {
+              spinVelocityX = 0;
+              spinVelocityY = 0;
+              spinQuaternion.slerp(restingSpinQuaternion, 0.075);
+
+              if (spinQuaternion.angleTo(restingSpinQuaternion) < 0.001) {
+                spinQuaternion.identity();
+                returningToRest = false;
+              }
+            } else {
+              applySpinDelta(spinVelocityX, spinVelocityY);
+              spinVelocityX *= 0.972;
+              spinVelocityY *= 0.972;
+              if (Math.abs(spinVelocityX) < 0.0001) spinVelocityX = 0;
+              if (Math.abs(spinVelocityY) < 0.0001) spinVelocityY = 0;
+            }
+          }
+
+          baseRotation.set(
+            targetRotationX + pointerY * pointerMotion.rotationX,
+            targetRotationY + pointerX * pointerMotion.rotationY,
+            targetRotationZ + pointerX * pointerMotion.rotationZ,
+          );
+          baseQuaternion.setFromEuler(baseRotation);
+          targetQuaternion.copy(spinQuaternion).multiply(baseQuaternion);
+          const nextX = targetX + pointerX * pointerMotion.positionX;
+          const nextY = targetY - pointerY * pointerMotion.positionY;
           const movement = Math.max(
-            Math.abs(holder.rotation.x - nextRotationX),
-            Math.abs(holder.rotation.y - nextRotationY),
-            Math.abs(holder.rotation.z - nextRotationZ),
-            Math.abs(holder.position.x - targetX),
-            Math.abs(holder.position.y - targetY),
+            holder.quaternion.angleTo(targetQuaternion),
+            Math.abs(holder.position.x - nextX),
+            Math.abs(holder.position.y - nextY),
             Math.abs(holder.scale.x - targetScale),
+            Math.abs(spinVelocityX),
+            Math.abs(spinVelocityY),
+            returningToRest ? spinQuaternion.angleTo(restingSpinQuaternion) : 0,
           );
 
-          holder.rotation.x = THREE.MathUtils.lerp(holder.rotation.x, nextRotationX, 0.115);
-          holder.rotation.y = THREE.MathUtils.lerp(holder.rotation.y, nextRotationY, 0.115);
-          holder.rotation.z = THREE.MathUtils.lerp(holder.rotation.z, nextRotationZ, 0.115);
-          holder.position.x = THREE.MathUtils.lerp(holder.position.x, targetX, 0.115);
-          holder.position.y = THREE.MathUtils.lerp(holder.position.y, targetY, 0.115);
+          if (dragging) holder.quaternion.copy(targetQuaternion);
+          else holder.quaternion.slerp(targetQuaternion, 0.15);
+          holder.position.x = THREE.MathUtils.lerp(holder.position.x, nextX, 0.115);
+          holder.position.y = THREE.MathUtils.lerp(holder.position.y, nextY, 0.115);
           holder.scale.setScalar(THREE.MathUtils.lerp(holder.scale.x, targetScale, 0.115));
 
           renderer.render(scene, camera);
-          if (movement > 0.0007) frame = requestAnimationFrame(render);
+          if (movement > 0.0007 || dragging) frame = requestAnimationFrame(render);
         };
 
         const requestRender = () => {
           if (active && !frame) frame = requestAnimationFrame(render);
+        };
+
+        const scheduleReturnToRest = (delay = 850) => {
+          cancelReturnToRest();
+          returnTimer = window.setTimeout(() => {
+            returnTimer = 0;
+            returningToRest = true;
+            spinVelocityX = 0;
+            spinVelocityY = 0;
+            requestRender();
+          }, delay);
         };
 
         const start = () => {
@@ -397,11 +497,23 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
         renderer.render(scene, camera);
         root.dataset.modelState = 'loaded';
         root.toggleAttribute('data-loaded', true);
+        root.tabIndex = 0;
+        root.setAttribute(
+          'aria-label',
+          `${root.getAttribute('aria-label') ?? 'Three-dimensional mark'}. Drag in any direction or use the arrow keys to spin.`,
+        );
 
         reducedMotion.addEventListener('change', (event) => {
           root.toggleAttribute('data-loaded', !event.matches);
-          if (event.matches) stop();
-          else {
+          if (event.matches) {
+            cancelReturnToRest();
+            spinQuaternion.identity();
+            spinVelocityX = 0;
+            spinVelocityY = 0;
+            root.removeAttribute('tabindex');
+            stop();
+          } else {
+            root.tabIndex = 0;
             const rect = root.getBoundingClientRect();
             if (rect.bottom > 0 && rect.top < window.innerHeight) start();
           }
@@ -430,25 +542,129 @@ const fallbackMask = `url("${withBase('/hood-mark.svg')}")`;
           'scroll',
           () => {
             if (!active) return;
+            if (!dragging) {
+              cancelReturnToRest();
+              spinQuaternion.identity();
+              spinVelocityX = 0;
+              spinVelocityY = 0;
+            }
             measureScroll();
             requestRender();
           },
           { passive: true },
         );
 
-        if (finePointer.matches) {
-          root.addEventListener('pointermove', (event) => {
-            const rect = root.getBoundingClientRect();
-            pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
-            pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
-            requestRender();
-          });
-          root.addEventListener('pointerleave', () => {
+        const updatePointerFollow = (event: PointerEvent) => {
+          if (!finePointer.matches || event.pointerType !== 'mouse') return;
+          const rect = root.getBoundingClientRect();
+          pointerX = THREE.MathUtils.clamp(
+            (event.clientX - (rect.left + rect.width / 2)) / Math.max(rect.width * 0.5, 1),
+            -1,
+            1,
+          );
+          pointerY = THREE.MathUtils.clamp(
+            (event.clientY - (rect.top + rect.height / 2)) / Math.max(rect.height * 0.55, 1),
+            -1,
+            1,
+          );
+          requestRender();
+        };
+
+        window.addEventListener('pointermove', updatePointerFollow, { passive: true });
+        window.addEventListener('pointerout', (event) => {
+          if (event.relatedTarget === null && !dragging) {
             pointerX = 0;
             pointerY = 0;
             requestRender();
-          });
-        }
+          }
+        });
+
+        root.addEventListener('pointerdown', (event) => {
+          if (!active || (event.pointerType === 'mouse' && event.button !== 0)) return;
+          cancelReturnToRest();
+          dragging = true;
+          dragPointerId = event.pointerId;
+          lastDragX = event.clientX;
+          lastDragY = event.clientY;
+          lastDragTime = event.timeStamp;
+          spinVelocityX = 0;
+          spinVelocityY = 0;
+          root.toggleAttribute('data-dragging', true);
+          root.setPointerCapture(event.pointerId);
+          event.preventDefault();
+          requestRender();
+        });
+
+        root.addEventListener('pointermove', (event) => {
+          if (!dragging || event.pointerId !== dragPointerId) return;
+          const deltaX = event.clientX - lastDragX;
+          const deltaY = event.clientY - lastDragY;
+          const elapsed = Math.max(event.timeStamp - lastDragTime, 8);
+          const frameRateScale = 16.67 / elapsed;
+          const rect = root.getBoundingClientRect();
+          const yawDelta = (deltaX / Math.max(rect.width, 1)) * Math.PI * 2;
+          const pitchDelta = (deltaY / Math.max(rect.height, 1)) * Math.PI * 2;
+
+          applySpinDelta(pitchDelta, yawDelta);
+          spinVelocityX = THREE.MathUtils.clamp(
+            pitchDelta * frameRateScale,
+            -0.45,
+            0.45,
+          );
+          spinVelocityY = THREE.MathUtils.clamp(yawDelta * frameRateScale, -0.45, 0.45);
+          lastDragX = event.clientX;
+          lastDragY = event.clientY;
+          lastDragTime = event.timeStamp;
+          event.preventDefault();
+          requestRender();
+        });
+
+        const endDrag = (event: PointerEvent, cancelled = false) => {
+          if (!dragging || event.pointerId !== dragPointerId) return;
+          dragging = false;
+          dragPointerId = -1;
+          root.removeAttribute('data-dragging');
+          if (cancelled || event.timeStamp - lastDragTime > 80) {
+            spinVelocityX = 0;
+            spinVelocityY = 0;
+          }
+          if (root.hasPointerCapture(event.pointerId)) {
+            root.releasePointerCapture(event.pointerId);
+          }
+          updatePointerFollow(event);
+          scheduleReturnToRest(cancelled ? 0 : 850);
+          requestRender();
+        };
+
+        root.addEventListener('pointerup', (event) => endDrag(event));
+        root.addEventListener('pointercancel', (event) => endDrag(event, true));
+        root.addEventListener('lostpointercapture', (event) => endDrag(event));
+
+        root.addEventListener('keydown', (event) => {
+          if (
+            event.key !== 'ArrowLeft' &&
+            event.key !== 'ArrowRight' &&
+            event.key !== 'ArrowUp' &&
+            event.key !== 'ArrowDown' &&
+            event.key !== 'Home'
+          ) {
+            return;
+          }
+
+          const step = event.shiftKey ? 0.35 : 0.18;
+          cancelReturnToRest();
+          if (event.key === 'ArrowLeft') applySpinDelta(0, -step);
+          else if (event.key === 'ArrowRight') applySpinDelta(0, step);
+          else if (event.key === 'ArrowUp') applySpinDelta(-step, 0);
+          else if (event.key === 'ArrowDown') applySpinDelta(step, 0);
+          else spinQuaternion.identity();
+
+          event.preventDefault();
+          spinVelocityX = 0;
+          spinVelocityY = 0;
+          if (event.key !== 'Home') scheduleReturnToRest();
+          requestRender();
+        });
       } catch (error) {
         initialized = false;
         root.dataset.modelState = 'error';

@@ -1,8 +1,21 @@
 ---
-/* Compact, left-aligned introduction on white. */
+const proofPoints = [
+  {
+    label: 'Locally operated',
+    statement: 'Serving communities across DFW',
+  },
+  {
+    label: 'Hands-on support',
+    statement: 'Real people, not a call center',
+  },
+  {
+    label: 'Built for HOAs',
+    statement: 'Pool, maintenance, cleanup, and community support in one place',
+  },
+];
 ---
 
-<section id="why-hood" class="section bg-surface">
+<section id="why-hood" class="why section bg-surface">
   <div class="container-page">
     <span class="eyebrow" data-reveal>Why HOOD</span>
 
@@ -25,5 +38,63 @@
         </p>
       </div>
     </div>
+
+    <ul
+      class="why__proofs"
+      aria-label="Why communities choose HOOD"
+      data-reveal
+      style="--reveal-i:3"
+    >
+      {
+        proofPoints.map((proof) => (
+          <li class="why__proof">
+            <p class="why__proof-label">{proof.label}</p>
+            <p class="why__proof-statement">{proof.statement}</p>
+          </li>
+        ))
+      }
+    </ul>
   </div>
 </section>
+
+<style>
+  .why__proofs {
+    display: grid;
+    gap: 2.75rem;
+    margin-top: clamp(3.75rem, 7vw, 6.5rem);
+    padding: 0;
+    list-style: none;
+  }
+
+  .why__proof {
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 52%, transparent);
+  }
+
+  .why__proof-label {
+    color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .why__proof-statement {
+    max-width: 19ch;
+    margin-top: clamp(1.35rem, 2.5vw, 2rem);
+    color: var(--color-ink);
+    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  @media (min-width: 900px) {
+    .why__proofs {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(1.75rem, 3vw, 3.25rem);
+    }
+  }
+</style>

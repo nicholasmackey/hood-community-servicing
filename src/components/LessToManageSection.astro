@@ -1,12 +1,17 @@
 ---
 import HoodMark3D from './HoodMark3D.astro';
+import { withBase } from '../utils/paths';
+
+const hoodWordmark = withBase('/hood-wordmark.svg');
 ---
 
 <section id="less-to-manage" class="less bg-surface">
   <div class="container-page less__grid">
     <div class="less__copy">
       <h2 class="h-section max-w-[22ch]" data-reveal>
-        One call. Fewer things to chase down.
+        <span class="block">One call.</span>
+        <span class="block">Fewer things</span>
+        <span class="block">to chase down.</span>
       </h2>
 
       <p
@@ -26,7 +31,18 @@ import HoodMark3D from './HoodMark3D.astro';
     </div>
 
     <div class="less__visual" data-reveal style="--reveal-i:1">
-      <HoodMark3D />
+      <img
+        class="less__word"
+        src={hoodWordmark}
+        width="507"
+        height="92"
+        alt=""
+        aria-hidden="true"
+        style="opacity: 0.03"
+      />
+      <div class="less__mark">
+        <HoodMark3D />
+      </div>
     </div>
   </div>
 </section>
@@ -50,7 +66,46 @@ import HoodMark3D from './HoodMark3D.astro';
   }
 
   .less__visual {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    min-width: 0;
     width: 100%;
+  }
+
+  .less__word {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    right: calc(var(--gutter) * -1);
+    width: clamp(22rem, 118vw, 32rem);
+    max-width: none;
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    transform: translateY(-50%);
+  }
+
+  .less__mark {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+    width: 100%;
+  }
+
+  .less__mark::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    bottom: 16%;
+    left: 50%;
+    width: 36%;
+    height: 3.5%;
+    background: rgb(43 33 29 / 0.1);
+    filter: blur(12px);
+    transform: translateX(-50%);
+    pointer-events: none;
   }
 
   .less__link {
@@ -76,6 +131,13 @@ import HoodMark3D from './HoodMark3D.astro';
     .less__grid {
       grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
       gap: clamp(2rem, 4vw, 4rem);
+    }
+
+    .less__word {
+      right: calc(
+        (100vw - min(100vw, var(--container-max))) / -2 - var(--gutter)
+      );
+      width: clamp(30rem, 48vw, 58rem);
     }
   }
 
