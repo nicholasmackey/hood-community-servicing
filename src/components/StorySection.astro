@@ -4,8 +4,8 @@ import { withBase } from '../utils/paths';
 /*
  * Hood's own photography, from their own sites. Phone frames rather than a
  * shoot, and the strip is built to keep them that way: documentary pictures at
- * one size, staggered, carrying the same light desaturation the services
- * previews do so the page reads as one grade.
+ * one size carrying the same light desaturation the services previews do, so
+ * the page reads as one grade.
  *
  * The files are pre-derived WebP at three widths — see
  * scripts/optimize-team-photos.mjs — rather than <Image /> from astro:assets,
@@ -13,10 +13,11 @@ import { withBase } from '../utils/paths';
  * this build deliberately has no native dependency in it. Same output, same
  * srcset, nothing for the deploy to resolve.
  *
- * The first frame is the anchor: it spans the width of a phone as a wide crop
- * and takes its place in the row from 900px up. It is the only one that needs
- * an object-position, because every other frame is served at the ratio it is
- * displayed at and is never cropped.
+ * Two layouts off one list. On a phone the frames run as a marquee that never
+ * stops, which is why the set is rendered twice: the second pass is a
+ * decorative copy so the track can translate by exactly half its width and
+ * land the first clone where its original was. From 640px up the copies are
+ * dropped and the frames resolve into the grid, staggered at 900px.
  */
 const WIDTHS = [400, 640, 1000];
 
@@ -41,6 +42,18 @@ const gallery = [
   ),
   photo('team-pool-monitor', 'A pool monitor on duty at the edge of a community pool.'),
 ];
+
+/* The marquee needs the run twice over. The clones are hidden from assistive
+   tech and carry no reveal, so the list is still four pictures long to a
+   screen reader and nothing off-screen is waiting on an observer. */
+const strip = [
+  ...gallery.map((item) => ({ ...item, clone: false })),
+  ...gallery.map((item) => ({ ...item, clone: true })),
+];
+
+/* Every frame is served at the ratio it is displayed at, so none of them is
+   ever cropped — the widths below are just what the layout asks for. */
+const SIZES = ['(min-width: 900px) 22vw', '(min-width: 640px) 30vw', '46vw'].join(', ');
 ---
 
 <section id="story" class="section bg-night text-white">
@@ -69,28 +82,31 @@ const gallery = [
       </div>
     </div>
 
-    <ul class="story__gallery">
-      {
-        gallery.map((item, index) => (
-          <li class="story__figure" data-reveal style={`--reveal-i:${index}`}>
-            <img
-              src={item.src}
-              srcset={item.srcset}
-              sizes={[
-                '(min-width: 900px) 22vw',
-                '(min-width: 640px) 30vw',
-                index === 0 ? '100vw' : '48vw',
-              ].join(', ')}
-              alt={item.alt}
-              width="1000"
-              height="1330"
-              loading="lazy"
-              decoding="async"
-            />
-          </li>
-        ))
-      }
-    </ul>
+    <div class="story__strip">
+      <ul class="story__gallery">
+        {
+          strip.map((item, index) => (
+            <li
+              class:list={['story__figure', { 'story__figure--clone': item.clone }]}
+              aria-hidden={item.clone ? 'true' : undefined}
+              data-reveal={item.clone ? undefined : true}
+              style={`--reveal-i:${index % gallery.length}`}
+            >
+              <img
+                src={item.src}
+                srcset={item.srcset}
+                sizes={SIZES}
+                alt={item.clone ? '' : item.alt}
+                width="1000"
+                height="1330"
+                loading="lazy"
+                decoding="async"
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
   </div>
 </section>
 
@@ -105,34 +121,43 @@ const gallery = [
     line-height: 1.5;
   }
 
-  /* Two columns on a phone, with the anchor across both. align-items: start is
-     what lets the stagger further down work without any frame leaving the grid.
-
-     --story-gap is the one measure the strip is built on: it sets the column
-     gap at every tier, and on desktop the stagger is a multiple of it. */
-  .story__gallery {
-    --story-gap: 0.75rem;
-
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-    gap: var(--story-gap);
+  /* --- Phone: a strip that keeps moving ---------------------------------
+     Full bleed, because a marquee that stops inside the gutter reads as a
+     row that didn't fit rather than as a run with no end. The negative
+     margin takes it out to the container's border box, which below 640px is
+     the viewport. */
+  .story__strip {
     margin-top: clamp(3rem, 6vw, 5rem);
+    margin-inline: calc(var(--gutter) * -1);
+    overflow: hidden;
+  }
+
+  .story__gallery {
+    /* --story-gap is the one measure the strip is built on: the space between
+       frames at every tier, and on desktop the stagger is a multiple of it. */
+    --story-gap: 0.75rem;
+    --story-frame: clamp(9.5rem, 46vw, 14rem);
+    /* One full set passes per cycle. Slow enough to read each picture, quick
+       enough that the strip is obviously alive on a first look. */
+    --story-run: 18s;
+
+    display: flex;
+    width: max-content;
     padding: 0;
     list-style: none;
+    animation: story-marquee var(--story-run) linear infinite;
   }
 
   .story__figure {
     position: relative;
+    flex: 0 0 var(--story-frame);
     overflow: hidden;
+    /* The gap belongs to the frame, not the track. With `gap` the two halves
+       of the track differ by exactly one gap and the loop jumps at the seam. */
+    margin-inline-end: var(--story-gap);
     aspect-ratio: 3 / 4;
     border: 1px solid rgb(255 255 255 / 0.14);
     background-color: rgb(255 255 255 / 0.04);
-  }
-
-  .story__figure:first-child {
-    grid-column: span 2;
-    aspect-ratio: 3 / 2;
   }
 
   /* The frame owns the ratio, so the picture fills it and is cropped rather
@@ -148,10 +173,51 @@ const gallery = [
     filter: saturate(0.88) contrast(1.03);
   }
 
-  /* Only the anchor is ever cropped, and only below 900px. Weighted up so the
-     faces survive the 3:2 frame. */
-  .story__figure:first-child img {
-    object-position: center 30%;
+  @keyframes story-marquee {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  /* Frames the marquee has yet to bring in are off-screen when the section is
+     read, so the entrance observer would fade them up mid-travel. The strip
+     arrives whole instead; the cascade is a desktop effect. Specificity here
+     has to clear `html[data-reveal-ready] [data-reveal]`, hence the three
+     classes' worth of it. */
+  @media (max-width: 639.98px) {
+    .story__gallery .story__figure[data-reveal] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* The reduced-motion block in global.css freezes any animation to 0.01ms,
+     which would leave the strip parked on its first two frames with the rest
+     clipped and unreachable. Hand it back as something to swipe. */
+  @media (max-width: 639.98px) and (prefers-reduced-motion: reduce) {
+    .story__strip {
+      padding-inline: var(--gutter);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+    }
+
+    .story__gallery {
+      animation: none;
+    }
+
+    .story__figure {
+      scroll-snap-align: start;
+    }
+
+    .story__figure--clone {
+      display: none;
+    }
   }
 
   /* The middle tier. Two columns on a tablet would hand the same proportions
@@ -159,21 +225,35 @@ const gallery = [
      most of a screen per picture. Three columns hold them to a readable size
      and the strip resolves in two ranks, the second one short. */
   @media (min-width: 640px) {
+    .story__strip {
+      margin-inline: 0;
+      overflow: visible;
+    }
+
     .story__gallery {
       --story-gap: 1rem;
 
+      display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: start;
+      gap: var(--story-gap);
+      width: auto;
+      animation: none;
     }
 
-    .story__figure:first-child {
-      grid-column: auto;
-      aspect-ratio: 3 / 4;
+    .story__figure {
+      margin-inline-end: 0;
+    }
+
+    .story__figure--clone {
+      display: none;
     }
 
     /* Four frames across three columns leave the last one on its own. Under
        the middle of the rank above it reads as a closing frame; in the corner
-       it reads as a leftover. */
-    .story__figure:last-child {
+       it reads as a leftover. Counted rather than :last-child, which the
+       marquee clones now hold. */
+    .story__figure:nth-child(4) {
       grid-column: 2;
     }
   }
@@ -184,16 +264,19 @@ const gallery = [
      row is as tall as a dropped frame, so nothing overhangs the section's
      padding. */
   @media (min-width: 900px) {
-    .story__gallery {
-      --story-gap: 1.25rem;
-
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .story__strip {
       /* Four wider frames need less runway than five narrow ones did, so the
          strip sits nearer the paragraphs it is evidence for. */
       margin-top: clamp(2.5rem, 3.4vw, 3.25rem);
     }
 
-    .story__figure:last-child {
+    .story__gallery {
+      --story-gap: 1.25rem;
+
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .story__figure:nth-child(4) {
       grid-column: auto;
     }
 
