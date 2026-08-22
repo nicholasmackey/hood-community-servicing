@@ -6,6 +6,7 @@ import Hero from '../components/Hero.astro';
 import WhyHoodSection from '../components/WhyHoodSection.astro';
 import ServicesSection from '../components/ServicesSection.astro';
 import LessToManageSection from '../components/LessToManageSection.astro';
+import StorySection from '../components/StorySection.astro';
 import TeamSection from '../components/TeamSection.astro';
 import TestimonialsSection from '../components/TestimonialsSection.astro';
 import ContactSection from '../components/ContactSection.astro';
@@ -13,19 +14,21 @@ import Footer from '../components/Footer.astro';
 ---
 
 <BaseLayout
-  title="HOOD Community Servicing — Community Services for HOAs in DFW"
+  title="HOOD Community Servicing | HOA & Community Services in DFW"
   description="Lifeguard staffing, pool management, cleanups, hauling, power washing, and everyday community services for HOAs, neighborhoods, and residential communities in DFW."
 >
   <IntroReveal />
 
   <Header />
 
-  {/* Post-intro rhythm: footage, white, near-black, white, near-black, white, ink. */}
+  {/* Post-intro rhythm, strictly alternating: footage, white, near-black,
+      white, near-black, white, near-black, ink. */}
   <main id="main">
     <Hero />
     <WhyHoodSection />
     <ServicesSection />
     <LessToManageSection />
+    <StorySection />
     <TeamSection />
     <TestimonialsSection />
     <ContactSection />

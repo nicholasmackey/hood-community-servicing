@@ -1,182 +1,95 @@
 ---
-import ImagePlaceholder from './ImagePlaceholder.astro';
-import Logo from './Logo.astro';
-
 /*
- * PHOTOGRAPHY PENDING — the two portraits below are placeholders. Drop the
- * real files at the paths named on them and swap each <ImagePlaceholder /> for
- * an <img> with the same aspect class, and nothing else about the card moves.
+ * Text-only by design. Hood have no headshots and are not commissioning any,
+ * so this is a set of profiles rather than two cards with a hole in each: a
+ * red rule, the name, the title, and what the person actually does. The
+ * photography that shows the team is real is the strip in the story section
+ * above, which is where it belongs.
  *
- * Bios and titles here are HOOD's own copy and are real.
+ * Names, titles, and the substance of the bios are Hood's own.
  */
-
-const people = [
+const leaders = [
   {
     name: 'Tim Hood',
     role: 'Founder & CEO',
-    bio: 'Tim Hood founded HOOD Community Services to help communities run better. With a hands-on approach and a focus on reliability, he leads a team committed to supporting property managers and the communities they serve.',
-    image: { label: 'Tim Hood portrait', src: '/images/team-tim-hood.webp' },
+    bio: 'Tim started HOOD after working the job himself. He still runs the field side of it, from staffing and scheduling to the call that comes in when something on site needs attention.',
   },
   {
     name: 'Tamika Stokes',
     role: 'Director of Operations',
-    bio: 'Tamika oversees day-to-day operations at HOOD Community Services, keeping the team organized, responsive, and focused on delivering dependable support to the communities they serve.',
-    image: { label: 'Tamika Stokes portrait', src: '/images/team-tamika-stokes.webp' },
+    bio: 'Tamika runs operations day to day: crews assigned, communities kept in the loop, and the small problems answered before they turn into complaints.',
   },
 ];
 ---
 
-<section id="team" class="bg-night text-white">
-  <div class="container-page team__inner">
-    <div class="team__intro max-w-[60rem]">
-      <div>
-        <span class="eyebrow eyebrow-on-dark" data-reveal>The people behind HOOD</span>
+<section id="team" class="section bg-surface">
+  <div class="container-page">
+    <span class="eyebrow" data-reveal>The people behind HOOD</span>
 
-        <h2
-          class="h-section mt-2.5 max-w-[24ch]"
-          data-reveal
-          style="--reveal-i:1"
-        >
-          People you can actually get ahold of.
-        </h2>
-      </div>
+    <div class="mt-2.5 max-w-[60rem]">
+      <h2 class="h-section max-w-[24ch]" data-reveal style="--reveal-i:1">
+        People you can actually get ahold of.
+      </h2>
 
-      <p
-        class="intro-copy mt-4 text-white/80"
-        data-reveal
-        style="--reveal-i:2"
-      >
+      <p class="intro-copy mt-4" data-reveal style="--reveal-i:2">
         When you reach out to HOOD, you’re talking to the people responsible for
         getting the work done. Clear communication, practical help, and a team
         that understands community operations.
       </p>
     </div>
 
-    <div class="team__cards">
+    <ul class="leaders">
       {
-        people.map((person, index) => (
-          <article class="card" data-reveal style={`--reveal-i:${index}`}>
-            <ImagePlaceholder
-              label={person.image.label}
-              src={person.image.src}
-              bordered={false}
-              class="card__image h-[190px] sm:h-full sm:min-h-[245px]"
-            />
-
-            <div class="card__body">
-              <h3 class="text-[22px] font-bold tracking-[-0.02em] lg:text-[25px]">
-                {person.name}
-              </h3>
-              <p class="eyebrow mt-1.5">{person.role}</p>
-              <p class="mt-3 text-[16px] leading-[1.5] text-muted">{person.bio}</p>
-            </div>
-
-            <Logo variant="mark" alt="" class="card__mark" />
-          </article>
+        leaders.map((leader, index) => (
+          <li class="leader" data-reveal style={`--reveal-i:${index}`}>
+            <h3 class="leader__name">{leader.name}</h3>
+            <p class="eyebrow mt-2">{leader.role}</p>
+            <p class="leader__bio">{leader.bio}</p>
+          </li>
         ))
       }
-    </div>
+    </ul>
   </div>
 </section>
 
 <style>
-  .team__inner {
-    padding-block: var(--section-space);
-  }
-
-  .team__intro {
-    display: block;
-  }
-
-  .team__cards {
+  /* The why-hood proofs on this same ground open on a hairline in ink; these
+     open on the brand rule, which is the weight the services rows and the menu
+     use. Same system, different register — and enough to keep two rule-topped
+     lists on one page from reading as the same block twice. */
+  .leaders {
     display: grid;
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: 2.75rem;
+    margin-top: clamp(3rem, 6vw, 5rem);
+    padding: 0;
+    list-style: none;
   }
 
-  .card {
-    position: relative;
-    display: grid;
-    overflow: hidden;
-    border: 1px solid rgb(255 255 255 / 0.14);
-    background-color: #ffffff;
-    color: var(--color-ink);
+  .leader {
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--color-brand-red);
   }
 
-  /* A card that lifts a couple of pixels and firms up its edge. Desktop
-     pointers only — on a touch screen this either never fires or sticks after
-     a tap, the same reason the services rows gate their hover. */
-  @media (hover: hover) and (min-width: 768px) {
-    .card {
-      transition:
-        transform 320ms cubic-bezier(0.33, 1, 0.68, 1),
-        border-color 320ms ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: color-mix(in srgb, var(--color-ink) 28%, transparent);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .card,
-      .card:hover {
-        transform: none;
-        transition: none;
-      }
-    }
+  .leader__name {
+    font-size: clamp(1.75rem, 1.45rem + 0.95vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
   }
 
-  .card__body {
-    position: relative;
-    z-index: 1;
-    padding: 1.35rem 1.25rem 1.6rem;
+  .leader__bio {
+    max-width: 46ch;
+    margin-top: 1rem;
+    color: var(--color-muted);
+    font-size: clamp(1rem, 0.96rem + 0.16vw, 1.125rem);
+    font-weight: 400;
+    line-height: 1.55;
   }
 
-  @media (min-width: 640px) {
-    .card {
-      grid-template-columns: minmax(190px, 0.82fr) minmax(0, 1.18fr);
-    }
-
-    .card__body {
-      padding: 1.5rem;
-    }
-  }
-
-  /* Oversized and clipped by the card's lower-right corner, quiet enough to
-     read as a watermark on the panel rather than a second logo. Rendered by
-     Logo.astro, so it never carries this component's scope attribute — reached
-     by class from the scoped .card instead. */
-  .card :global(.card__mark) {
-    position: absolute;
-    right: -3.5rem;
-    bottom: -3.5rem;
-    z-index: 0;
-    width: 13rem;
-    height: auto;
-    opacity: 0.05;
-    pointer-events: none;
-  }
-
-  @media (min-width: 1024px) {
-    .team__cards {
+  @media (min-width: 768px) {
+    .leaders {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.25rem;
-      margin-top: 2.25rem;
-    }
-
-    .card {
-      grid-template-columns: minmax(170px, 0.84fr) minmax(0, 1.16fr);
-    }
-
-    .card__body {
-      padding: 1.5rem 1.4rem 1.65rem;
-    }
-
-    .card :global(.card__mark) {
-      right: -3.5rem;
-      bottom: -3.5rem;
-      width: 13rem;
+      gap: clamp(2rem, 4vw, 4rem);
     }
   }
 </style>

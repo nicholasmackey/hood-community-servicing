@@ -29,13 +29,6 @@ const nav = [
     note: 'Tell us what your community needs.',
   },
 ];
-
-// TODO: replace with real HOOD contact details (same placeholders as Footer.astro).
-const contact = {
-  phone: '(000) 000-0000',
-  phoneHref: 'tel:+10000000000',
-  email: 'email@placeholder.com',
-};
 ---
 
 {/*
@@ -56,7 +49,7 @@ const contact = {
     <a
       href={homeHref}
       class="brand-link inline-flex shrink-0 items-center gap-2.5"
-      aria-label="HOOD Community Servicing — home"
+      aria-label="HOOD Community Servicing home"
     >
       <span
         class="brand-mark block shrink-0"
@@ -152,31 +145,16 @@ const contact = {
         was dealt, and this settles to the foot of whatever screen it lands on,
         for anyone who would rather not scroll to a form. */}
     <div class="menu-foot mt-auto pt-14">
-      {/* Not the red .eyebrow used elsewhere: brand red on ink is 3.3:1, which
-          is a rule colour and never 13px type. White at 70% clears 8:1 here,
-          and it is the same label treatment the contact panel already uses. */}
+      {/* The form is the way in until the business line is live, so the foot
+          is that one action and the line that says who it reaches. Not the red
+          .eyebrow used elsewhere: brand red on ink is 3.3:1, which is a rule
+          colour and never 13px type. White at 70% clears 8:1 here, and it is
+          the same label treatment the contact panel already uses. */}
       <p class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70">
-        Or reach us directly
+        Serving DFW
       </p>
 
-      <ul class="mt-4 space-y-2 text-[18px]">
-        <li>
-          <a
-            href={contact.phoneHref}
-            class="text-white underline decoration-white/40 underline-offset-4 transition-colors hover:decoration-brand-red"
-          >
-            {contact.phone}
-          </a>
-        </li>
-        <li>
-          <a
-            href={`mailto:${contact.email}`}
-            class="text-white underline decoration-white/40 underline-offset-4 transition-colors hover:decoration-brand-red"
-          >
-            {contact.email}
-          </a>
-        </li>
-      </ul>
+      <a href="#contact" class="btn btn-primary mt-4 w-full sm:w-auto">Talk to HOOD</a>
     </div>
   </div>
 </nav>
@@ -340,9 +318,15 @@ const contact = {
     opacity: 0.7;
   }
 
-  .menu-toggle:focus-visible,
-  .site-menu a:focus-visible {
-    outline: none;
+  /* The global ring is brand red, which is right on the white bar and thin on
+     ink. Inside the panel, and on the toggle once the panel is up behind it,
+     the same ring goes white for the ground it lands on. Not removed: the
+     rules and the wipe are the panel's only other visual state, and neither
+     of them tells a keyboard where it is. */
+  .site-menu a:focus-visible,
+  html[data-menu-open] .menu-toggle:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 3px;
   }
 
   /* ======================================================================

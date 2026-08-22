@@ -1,16 +1,41 @@
 ---
-const proofPoints = [
+import supportIcon from '../../public/support.svg?raw';
+import contactIcon from '../../public/contact.svg?raw';
+import poolIcon from '../../public/pool-maintenance.svg?raw';
+
+/* The three icons ship as flat, single-colour SVGs in public/. They are inlined
+   at build time rather than linked with <img> for two reasons: an inline SVG
+   stays crisp at whatever size the grid asks for, and it can inherit its
+   colour. The files arrive with three different fills baked in — red, blue,
+   teal — which would put two colours on this page that appear nowhere else on
+   the site. Swapping the fill for currentColor leaves the artwork exactly as
+   drawn and lets the row read as one set in HOOD red.
+
+   Only the fill is touched. The 24×24 width/height attributes stay, so the
+   icon's intrinsic size is 24px and the CSS below scales up from there — strip
+   them and an SVG with nothing but a viewBox expands to the full width of its
+   container the moment the scoped rule fails to match. */
+const prepIcon = (raw: string) =>
+  raw.replace(/fill="#[0-9a-fA-F]{3,8}"/g, 'fill="currentColor"');
+
+const points = [
   {
-    label: 'Locally operated',
-    statement: 'Serving communities across DFW',
+    icon: prepIcon(supportIcon),
+    label: 'More covered',
+    headline: 'One team for more of the work your community needs.',
+    copy: 'Pool staffing, monitoring, cleanup, hauling, power washing, maintenance, and everyday community support.',
   },
   {
-    label: 'Hands-on support',
-    statement: 'Real people, not a call center',
+    icon: prepIcon(contactIcon),
+    label: 'Less chasing',
+    headline: 'One call. You know who’s handling it.',
+    copy: 'Clear communication, a direct point of contact, and someone taking ownership when something needs attention.',
   },
   {
+    icon: prepIcon(poolIcon),
     label: 'Built for HOAs',
-    statement: 'Pool, maintenance, cleanup, and community support in one place',
+    headline: 'From pool season to everything around it.',
+    copy: 'HOOD understands the day-to-day work that keeps shared spaces staffed, clean, maintained, and ready for residents.',
   },
 ];
 ---
@@ -26,30 +51,35 @@ const proofPoints = [
 
       <div class="mt-4" data-reveal style="--reveal-i:2">
         <p class="intro-copy text-ink">
-          Pools need to be staffed. Common areas need attention. Small
-          maintenance and cleanup jobs still have to get handled.
+          Pools need staffing. Common areas need attention. Small jobs keep
+          coming. Handling it usually means lining up separate vendors and
+          following up to find out where things stand.
         </p>
 
         <p class="body-copy mt-3">
-          HOOD Community Services helps HOAs handle the everyday work that keeps
-          a community running. From pool staffing and management to cleanups,
-          hauling, power washing, and other community needs, we’re here to make
-          those responsibilities easier to manage.
+          HOOD does that work for you — one company covering more of what a
+          community needs, and one person to call when something comes up.
         </p>
       </div>
     </div>
 
-    <ul
-      class="why__proofs"
-      aria-label="Why communities choose HOOD"
-      data-reveal
-      style="--reveal-i:3"
-    >
+    <ul class="why__points" aria-label="Why communities choose HOOD">
       {
-        proofPoints.map((proof) => (
-          <li class="why__proof">
-            <p class="why__proof-label">{proof.label}</p>
-            <p class="why__proof-statement">{proof.statement}</p>
+        points.map((point, i) => (
+          <li class="why__point">
+            <span
+              class="why__icon"
+              aria-hidden="true"
+              data-reveal
+              style={`--reveal-i:${i}`}
+              set:html={point.icon}
+            />
+
+            <div class="why__point-body" data-reveal style={`--reveal-i:${i + 3}`}>
+              <p class="why__point-label">{point.label}</p>
+              <p class="why__point-headline">{point.headline}</p>
+              <p class="why__point-copy">{point.copy}</p>
+            </div>
           </li>
         ))
       }
@@ -58,21 +88,43 @@ const proofPoints = [
 </section>
 
 <style>
-  .why__proofs {
+  /* --- The three value columns ------------------------------------------ */
+
+  .why__points {
     display: grid;
-    gap: 2.75rem;
-    margin-top: clamp(3.75rem, 7vw, 6.5rem);
+    /* Tighter than the old 3.75–6.5rem. These columns are the argument, not a
+       footnote to the copy above them, so they sit close enough to read as part
+       of the same thought. */
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    gap: 2.25rem;
     padding: 0;
     list-style: none;
   }
 
-  .why__proof {
-    padding-top: 1rem;
-    border-top: 1px solid color-mix(in srgb, var(--color-ink) 52%, transparent);
+  .why__point {
+    padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-top: 1px solid var(--color-border);
   }
 
-  .why__proof-label {
-    color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+  /* The wrapper is what Astro's scoping can reach; the inlined <svg> inside it
+     cannot be, hence the :global() on the child. */
+  .why__icon {
+    display: block;
+    color: var(--color-brand-red);
+  }
+
+  .why__icon > :global(svg) {
+    display: block;
+    width: clamp(2.375rem, 1.95rem + 1.4vw, 3.125rem);
+    height: auto;
+  }
+
+  .why__point-body {
+    margin-top: clamp(1.125rem, 2vw, 1.5rem);
+  }
+
+  .why__point-label {
+    color: var(--color-brand-red);
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.2;
@@ -80,21 +132,41 @@ const proofPoints = [
     text-transform: uppercase;
   }
 
-  .why__proof-statement {
-    max-width: 19ch;
-    margin-top: clamp(1.35rem, 2.5vw, 2rem);
+  /* Big enough to carry the pitch on its own to someone scanning the page, and
+     small enough that a 3-up grid does not drop to four words a line. The cap
+     is for the stacked layout, where the column is as wide as the page. */
+  .why__point-headline {
+    max-width: 26ch;
+    margin-top: 0.75rem;
     color: var(--color-ink);
-    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.5rem);
+    font-size: clamp(1.375rem, 1.15rem + 0.95vw, 1.875rem);
     font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -0.025em;
+    line-height: 1.12;
+    letter-spacing: -0.022em;
     text-wrap: balance;
   }
 
+  .why__point-copy {
+    max-width: 34ch;
+    margin-top: 0.875rem;
+    color: var(--color-muted);
+    font-size: clamp(0.9375rem, 0.91rem + 0.12vw, 1.0625rem);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
   @media (min-width: 900px) {
-    .why__proofs {
+    .why__points {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: clamp(1.75rem, 3vw, 3.25rem);
+      gap: clamp(1.75rem, 3.2vw, 3.5rem);
+    }
+
+    /* The grid column is already a short enough measure here, and the extra cap
+       forced the longest of the three headlines onto a third line — which
+       pushed its supporting copy a line below the other two and left the row
+       looking misaligned. Let the column do the measuring. */
+    .why__point-headline {
+      max-width: none;
     }
   }
 </style>

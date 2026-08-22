@@ -1,0 +1,204 @@
+---
+import { withBase } from '../utils/paths';
+
+/*
+ * Hood's own photography, from their own sites. Phone frames rather than a
+ * shoot, and the strip is built to keep them that way: documentary pictures at
+ * one size, staggered, carrying the same light desaturation the services
+ * previews do so the page reads as one grade.
+ *
+ * The files are pre-derived WebP at three widths — see
+ * scripts/optimize-team-photos.mjs — rather than <Image /> from astro:assets,
+ * because Astro's image service needs sharp installed at the project root and
+ * this build deliberately has no native dependency in it. Same output, same
+ * srcset, nothing for the deploy to resolve.
+ *
+ * The first frame is the anchor: it spans the width of a phone as a wide crop
+ * and takes its place in the row from 900px up. It is the only one that needs
+ * an object-position, because every other frame is served at the ratio it is
+ * displayed at and is never cropped.
+ */
+const WIDTHS = [400, 640, 1000];
+
+const photo = (name: string, alt: string) => ({
+  alt,
+  src: withBase(`/images/team/${name}-640.webp`),
+  srcset: WIDTHS.map((w) => `${withBase(`/images/team/${name}-${w}.webp`)} ${w}w`).join(', '),
+});
+
+const gallery = [
+  photo(
+    'team-guard-crew',
+    'Four guards standing together under the shade structure at a community pool.'
+  ),
+  photo(
+    'team-sign-in-log',
+    'A staff member in a HOOD Community Servicing shirt at the pool sign-in and incident log.'
+  ),
+  photo(
+    'team-lifeguard-stand',
+    'A lifeguard on the stand beside a community pool and splash pad.'
+  ),
+  photo('team-pool-monitor', 'A pool monitor on duty at the edge of a community pool.'),
+];
+---
+
+<section id="story" class="section bg-night text-white">
+  <div class="container-page">
+    <span class="eyebrow eyebrow-on-dark" data-reveal>Our story</span>
+
+    <div class="mt-2.5 max-w-[60rem]">
+      <h2 class="h-section max-w-[24ch]" data-reveal style="--reveal-i:1">
+        Built from firsthand experience.
+      </h2>
+
+      <div class="mt-4" data-reveal style="--reveal-i:2">
+        <p class="intro-copy text-white/85">
+          HOOD Community Servicing started with two people. Tim and Tamika spent a
+          summer working as pool monitors for a local community, where they saw
+          firsthand how much dependable staffing, clear communication, and good
+          service matter.
+        </p>
+
+        <p class="story__body mt-3">
+          They started the company to provide exactly that. What began at one pool
+          has grown into a team supporting communities across DFW with pool services,
+          maintenance, cleanups, and everyday community needs. The approach is still
+          the same: show up, communicate, and take ownership of the work.
+        </p>
+      </div>
+    </div>
+
+    <ul class="story__gallery">
+      {
+        gallery.map((item, index) => (
+          <li class="story__figure" data-reveal style={`--reveal-i:${index}`}>
+            <img
+              src={item.src}
+              srcset={item.srcset}
+              sizes={[
+                '(min-width: 900px) 22vw',
+                '(min-width: 640px) 30vw',
+                index === 0 ? '100vw' : '48vw',
+              ].join(', ')}
+              alt={item.alt}
+              width="1000"
+              height="1330"
+              loading="lazy"
+              decoding="async"
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* .body-copy is keyed to --color-muted, which is a light-ground colour. Same
+     measure and rhythm, re-grounded for the dark panel. */
+  .story__body {
+    max-width: 66ch;
+    color: rgb(255 255 255 / 0.7);
+    font-size: clamp(1rem, 0.96rem + 0.16vw, 1.125rem);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* Two columns on a phone, with the anchor across both. align-items: start is
+     what lets the stagger further down work without any frame leaving the grid.
+
+     --story-gap is the one measure the strip is built on: it sets the column
+     gap at every tier, and on desktop the stagger is a multiple of it. */
+  .story__gallery {
+    --story-gap: 0.75rem;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--story-gap);
+    margin-top: clamp(3rem, 6vw, 5rem);
+    padding: 0;
+    list-style: none;
+  }
+
+  .story__figure {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    background-color: rgb(255 255 255 / 0.04);
+  }
+
+  .story__figure:first-child {
+    grid-column: span 2;
+    aspect-ratio: 3 / 2;
+  }
+
+  /* The frame owns the ratio, so the picture fills it and is cropped rather
+     than letterboxed, and the intrinsic width/height on the <img> is only
+     there to describe the file. */
+  .story__figure img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* The grade the services previews already carry. */
+    filter: saturate(0.88) contrast(1.03);
+  }
+
+  /* Only the anchor is ever cropped, and only below 900px. Weighted up so the
+     faces survive the 3:2 frame. */
+  .story__figure:first-child img {
+    object-position: center 30%;
+  }
+
+  /* The middle tier. Two columns on a tablet would hand the same proportions
+     a phone gets to twice the width, and four snapshots at 400px tall each is
+     most of a screen per picture. Three columns hold them to a readable size
+     and the strip resolves in two ranks, the second one short. */
+  @media (min-width: 640px) {
+    .story__gallery {
+      --story-gap: 1rem;
+
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .story__figure:first-child {
+      grid-column: auto;
+      aspect-ratio: 3 / 4;
+    }
+
+    /* Four frames across three columns leave the last one on its own. Under
+       the middle of the rank above it reads as a closing frame; in the corner
+       it reads as a leftover. */
+    .story__figure:last-child {
+      grid-column: 2;
+    }
+  }
+
+  /* One row of four, every frame at its native ratio, alternate frames dropped
+     by exactly two gaps — the stagger is measured in the same unit as the grid
+     it sits in, so it reads as rhythm rather than as an arbitrary offset. The
+     row is as tall as a dropped frame, so nothing overhangs the section's
+     padding. */
+  @media (min-width: 900px) {
+    .story__gallery {
+      --story-gap: 1.25rem;
+
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      /* Four wider frames need less runway than five narrow ones did, so the
+         strip sits nearer the paragraphs it is evidence for. */
+      margin-top: clamp(2.5rem, 3.4vw, 3.25rem);
+    }
+
+    .story__figure:last-child {
+      grid-column: auto;
+    }
+
+    .story__figure:nth-child(even) {
+      margin-top: calc(var(--story-gap) * 2);
+    }
+  }
+</style>

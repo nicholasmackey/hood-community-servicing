@@ -1,31 +1,71 @@
 ---
 /*
- * UI ONLY — there is no backend yet.
- * The form intentionally has no `action`. Before launch, point it at a handler
- * (Astro Actions, a form endpoint, or an email service) and add server-side
- * validation plus a spam guard.
+ * This form is the only way to reach Hood from this site — the placeholder
+ * phone and email are gone from the header and the footer — so it submits for
+ * real, to FormSubmit's AJAX endpoint, from the script at the foot of this
+ * file. No backend, no key, nothing to configure at build time: the recipient
+ * address is FormSubmit's entire configuration, and it is written once, down
+ * there. Nothing in this frontmatter or in the markup names it.
+ *
+ * The `name` on each control is the row heading FormSubmit prints in the
+ * notification email, not a DOM identifier — `id` still carries the DOM side
+ * and the label binding. Renaming a `name` changes what lands in the inbox.
  *
  * The CTA is the form heading rather than a separate promotional panel. This
  * keeps the close direct: invitation, then fields.
  */
 
+/*
+ * `maxlength` is a ceiling on the payload, not a rule anyone is meant to meet:
+ * every limit sits far above the longest real answer, so a visitor can never
+ * be cut off mid-word. 254 on the email is the address-length maximum RFC 5321
+ * allows, so nothing deliverable is excluded.
+ */
 const fields = [
-  { id: 'name', label: 'Name', type: 'text', autocomplete: 'name', required: true },
+  {
+    id: 'name',
+    name: 'Name',
+    label: 'Name',
+    type: 'text',
+    autocomplete: 'name',
+    required: true,
+    maxlength: 100,
+  },
   {
     id: 'company',
+    name: 'Company / Organization',
     label: 'Company / Organization',
     type: 'text',
     autocomplete: 'organization',
     required: false,
+    maxlength: 150,
   },
-  { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true },
-  { id: 'phone', label: 'Phone', type: 'tel', autocomplete: 'tel', required: false },
+  {
+    id: 'email',
+    name: 'Email',
+    label: 'Email',
+    type: 'email',
+    autocomplete: 'email',
+    required: true,
+    maxlength: 254,
+  },
+  {
+    id: 'phone',
+    name: 'Phone',
+    label: 'Phone',
+    type: 'tel',
+    autocomplete: 'tel',
+    required: false,
+    maxlength: 40,
+  },
   {
     id: 'property',
+    name: 'Community / Property',
     label: 'Community / Property Name',
     type: 'text',
     autocomplete: 'off',
     required: false,
+    maxlength: 150,
   },
 ] as const;
 
@@ -40,16 +80,18 @@ const needs = [
   'Something else',
 ];
 
-const labelClass = 'block text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70';
+const labelClass = 'block text-[13px] font-semibold uppercase tracking-[0.1em] text-muted';
 
-const inputClass =
-  'mt-2 w-full rounded-sm border border-white/40 bg-white/[0.04] px-4 py-3.5 text-[16px] text-white placeholder:text-white/35 transition-colors hover:border-white/55 focus:border-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+const fieldClass =
+  'w-full rounded-sm border border-border bg-white px-4 py-3.5 text-[16px] text-ink placeholder:text-muted/60 transition-colors hover:border-ink/35 focus:border-ink focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red';
+
+const inputClass = `mt-2 ${fieldClass}`;
 ---
 
-<section id="contact" class="contact-form-section text-white" aria-labelledby="contact-form-title">
+<section id="contact" class="bg-surface text-ink" aria-labelledby="contact-form-title">
   <div class="container-page py-14 sm:py-16 lg:py-20">
     <div class="mx-auto max-w-[50rem]">
-      <div class="border-b border-white/15 pb-8 text-center sm:pb-10">
+      <div class="border-b border-border pb-8 text-center sm:pb-10">
         <h2
           id="contact-form-title"
           class="text-balance text-[clamp(2rem,1.15rem+4.2vw,4.75rem)] font-extrabold leading-[0.96] tracking-[-0.02em]"
@@ -59,27 +101,28 @@ const inputClass =
         </h2>
       </div>
 
-      <form
-        id="contact-form"
-        class="mt-8 grid scroll-mt-24 gap-5 text-left sm:grid-cols-2 sm:gap-6"
-      >
+      {/* No scroll-mt of its own: the form carries an id, so the base rule's
+          header-height offset already applies when anything scrolls it into
+          view. A literal here only ever drifts from the bar it clears. */}
+      <form id="contact-form" class="mt-8 grid gap-5 text-left sm:grid-cols-2 sm:gap-6">
         {
           fields.map((field) => (
             <div class={field.id === 'property' ? 'sm:col-span-2' : ''}>
               <label class={labelClass} for={field.id}>
                 {field.label}
                 {!field.required && (
-                  <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
+                  <span class="ml-1.5 font-normal normal-case tracking-normal text-muted/70">
                     (optional)
                   </span>
                 )}
               </label>
               <input
                 id={field.id}
-                name={field.id}
+                name={field.name}
                 type={field.type}
                 autocomplete={field.autocomplete}
                 required={field.required}
+                maxlength={field.maxlength}
                 class={inputClass}
               />
             </div>
@@ -88,14 +131,12 @@ const inputClass =
 
         <div class="sm:col-span-2">
           <label class={labelClass} for="need">What do you need help with?</label>
-          <div class="relative">
-            {/* color-scheme keeps the native option list dark instead of white-on-white */}
+          <div class="relative mt-2">
             <select
               id="need"
-              name="need"
+              name="Service Needed"
               required
-              class={`${inputClass} appearance-none pr-12`}
-              style="color-scheme: dark;"
+              class={`${fieldClass} appearance-none pr-12`}
             >
               <option value="">Select an option</option>
               {needs.map((need) => <option value={need}>{need}</option>)}
@@ -103,10 +144,10 @@ const inputClass =
             <svg
               aria-hidden="true"
               viewBox="0 0 16 16"
-              class="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-white"
+              class="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-ink"
             >
               <path
-                d="m3 6 5 5 5-5"
+                d="m3 5.5 5 5 5-5"
                 fill="none"
                 stroke="currentColor"
                 stroke-linecap="round"
@@ -120,12 +161,41 @@ const inputClass =
         <div class="sm:col-span-2">
           <label class={labelClass} for="message">
             Message
-            <span class="ml-1.5 font-normal normal-case tracking-normal text-white/40">
+            <span class="ml-1.5 font-normal normal-case tracking-normal text-muted/70">
               (optional)
             </span>
           </label>
-          <textarea id="message" name="message" rows="4" class={inputClass}></textarea>
+          <textarea
+            id="message"
+            name="Message"
+            rows="4"
+            maxlength="2000"
+            class={inputClass}
+          ></textarea>
         </div>
+
+        {/*
+          Two honeypots, both bait. Bots fill in every field they can find;
+          these are display:none, so they are out of the layout, out of the tab
+          order and out of the accessibility tree, and no visitor can reach
+          either one. They still ride along in the payload, because display:none
+          does not stop a named control from being submitted.
+
+          `_honey` is FormSubmit's own — a submission that arrives with it
+          filled is discarded on their side before it becomes an email.
+          `website` is ours, and it is a plain-looking name on purpose: the
+          script below checks it and drops the submission before the request is
+          made, so the traffic never leaves the browser at all.
+        */}
+        <input type="text" name="_honey" tabindex="-1" autocomplete="off" class="hidden" />
+        <input
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+          class="hidden"
+        />
 
         <div class="sm:col-span-2">
           <button
@@ -135,14 +205,305 @@ const inputClass =
             Send request
           </button>
         </div>
+
+        {/*
+          Hidden until there is something to say, so it costs no grid row and no
+          gap in the resting form. `hidden` sits on the panel itself rather than
+          on a wrapper, or the wrapper would leave the gap behind.
+
+          Both marks ship in the markup and the state picks one, so the script
+          never has to build an icon — it only writes text into two spans.
+        */}
+        <div
+          id="contact-status"
+          class="status sm:col-span-2"
+          role="status"
+          aria-live="polite"
+          tabindex="-1"
+          hidden
+        >
+          <svg class="status__mark" data-status-mark="success" viewBox="0 0 22 22" aria-hidden="true">
+            <circle cx="11" cy="11" r="11" fill="currentColor"></circle>
+            <path
+              d="m6.4 11.4 3.1 3.1 6.1-6.6"
+              fill="none"
+              stroke="#fff"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.1"
+            ></path>
+          </svg>
+          <svg class="status__mark" data-status-mark="error" viewBox="0 0 22 22" aria-hidden="true">
+            <circle cx="11" cy="11" r="11" fill="currentColor"></circle>
+            <path
+              d="M11 5.9v6"
+              fill="none"
+              stroke="#fff"
+              stroke-linecap="round"
+              stroke-width="2.1"
+            ></path>
+            <circle cx="11" cy="15.6" r="1.2" fill="#fff"></circle>
+          </svg>
+          <p class="status__text">
+            <strong class="status__title" data-status-title></strong>
+            <span class="status__body" data-status-body></span>
+          </p>
+        </div>
       </form>
     </div>
   </div>
 </section>
 
+<script>
+  /*
+    FormSubmit takes no API key and needs no server: the recipient address is
+    the whole configuration, and the endpoint is that address. So it is one
+    constant here, and the endpoint is built from it — swapping in the Google
+    Workspace address later is this line and nothing else.
+  */
+  // Changing the FormSubmit recipient requires activation from the new inbox.
+  const FORM_RECIPIENT = 'hoodcommunity@yahoo.com';
+  const FORM_ENDPOINT = `https://formsubmit.co/ajax/${FORM_RECIPIENT}`;
+
+  /* Headline then reassurance, so the sent state reads at a glance and the
+     failed one still says what to do about it. */
+  const MESSAGES = {
+    success: {
+      title: 'Request sent',
+      body: 'Thanks, we’ve got it. We’ll be in touch soon.',
+    },
+    error: {
+      title: 'Something went wrong.',
+      body: 'Please try again.',
+    },
+  } as const;
+
+  const PENDING_LABEL = 'Sending...';
+
+  /* The two fake fields from the markup above. `TRAP_FIELD` is ours to strip:
+     left in, an always-empty row would print in every notification email.
+     `_honey` is FormSubmit's and is theirs to read, so it stays in the
+     payload. */
+  const TRAP_FIELD = 'website';
+  const TRAPS = ['_honey', TRAP_FIELD];
+
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const status = document.getElementById('contact-status');
+  const statusTitle = status?.querySelector<HTMLElement>('[data-status-title]');
+  const statusBody = status?.querySelector<HTMLElement>('[data-status-body]');
+  const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+  if (form && status && statusTitle && statusBody && button) {
+    /* Read off the button rather than repeated here, so the markup stays the
+       one place the resting label is written. */
+    const idleLabel = button.textContent?.trim() ?? 'Send request';
+    let pending = false;
+
+    const clearStatus = () => {
+      status.hidden = true;
+      statusTitle.textContent = '';
+      statusBody.textContent = '';
+      status.removeAttribute('data-state');
+    };
+
+    /* Text, then state, then reveal, then focus. The focus is what actually
+       gets the result spoken — a live region that was display:none a moment
+       ago is not announced reliably — and it also catches the focus the
+       browser drops on <body> the instant we disable the button underneath
+       it. Going from display:none to shown is also what replays the panel's
+       entrance, so no class has to be cycled to retrigger it. */
+    const showStatus = (state: 'success' | 'error') => {
+      statusTitle.textContent = MESSAGES[state].title;
+      statusBody.textContent = MESSAGES[state].body;
+      status.dataset.state = state;
+      status.hidden = false;
+      status.focus();
+    };
+
+    form.addEventListener('submit', async (event) => {
+      /* Native validation has already passed by the time this fires: the
+         browser will not raise submit while a required field is empty or the
+         email does not parse. */
+      event.preventDefault();
+
+      /* The disabled button stops the second click; this stops the second
+         submit event, which a form can still raise on its own from Enter in a
+         text field. */
+      if (pending) return;
+
+      /* The control names are the row headings FormSubmit prints, so the
+         payload is the form exactly as it stands plus FormSubmit's own
+         underscore-prefixed options. `_honey` rides in with the rest. */
+      const entries = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      const valueOf = (label: string) => (entries[label] ?? '').trim();
+
+      /* Nothing a person can type reaches either trap, so anything in one came
+         from something reading the DOM. It gets the ordinary success state and
+         no request: told it succeeded, a bot has no signal to retry against and
+         no reason to look for what caught it. Read before the field is stripped
+         from the payload, and before the button ever says Sending, so the
+         wasted round trip is skipped entirely. */
+      const trapped = TRAPS.some((field) => valueOf(field) !== '');
+      delete entries[TRAP_FIELD];
+
+      if (trapped) {
+        clearStatus();
+        form.reset();
+        showStatus('success');
+        return;
+      }
+
+      pending = true;
+      button.disabled = true;
+      button.textContent = PENDING_LABEL;
+      clearStatus();
+      const service = valueOf('Service Needed');
+      const name = valueOf('Name');
+
+      try {
+        const response = await fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            ...entries,
+            /* Enough for Tim or Tamika to triage from the inbox list without
+               opening anything. */
+            _subject: service
+              ? `HOOD Website Inquiry | ${service} | ${name}`
+              : `HOOD Website Inquiry | ${name}`,
+            /* Reply goes to the visitor, not back to FormSubmit. */
+            _replyto: valueOf('Email'),
+            _template: 'table',
+            /* Read off the page, so it follows the site from the GitHub Pages
+               URL to hoodcommunityservicing.com without a code change. */
+            _url: window.location.href,
+            _captcha: 'false',
+          }),
+        });
+
+        if (!response.ok) throw new Error(String(response.status));
+
+        form.reset();
+        showStatus('success');
+      } catch {
+        /* Whatever went wrong — offline, blocked, FormSubmit down — the
+           visitor gets one sentence and keeps every word they typed. */
+        showStatus('error');
+      } finally {
+        pending = false;
+        button.disabled = false;
+        button.textContent = idleLabel;
+      }
+    });
+  }
+</script>
+
 <style>
-  .contact-form-section {
-    background-color: #2b2724;
-    border-top: 1px solid rgb(255 255 255 / 0.08);
+  /* The panel is display:flex here and display:none from the `hidden`
+     attribute, which preflight sets with !important — so the attribute stays
+     the only switch and this never has to fight it. */
+  .status {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border-left: 3px solid;
+    border-radius: 2px;
+    padding: 0.9375rem 1.125rem;
+    animation: status-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Focused the moment it appears, so the result is spoken and the focus the
+     browser drops when the button goes disabled has somewhere to land. It is
+     not in the tab order and the panel is its own loud visual, so it does not
+     also need the page's red focus ring drawn around it. */
+  .status:focus,
+  .status:focus-visible {
+    outline: none;
+  }
+
+  .status[data-state='success'] {
+    border-color: var(--color-success);
+    background-color: color-mix(in srgb, var(--color-success) 9%, #fff);
+  }
+
+  .status[data-state='error'] {
+    border-color: var(--color-brand-red);
+    background-color: color-mix(in srgb, var(--color-brand-red) 9%, #fff);
+  }
+
+  .status__mark {
+    display: none;
+    flex: none;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-top: 0.0625rem;
+  }
+
+  .status[data-state='success'] [data-status-mark='success'] {
+    display: block;
+    color: var(--color-success);
+    /* The one flourish on the page: the check lands a beat after the panel
+       and overshoots slightly. Reduced motion collapses it to nothing via the
+       global animation-duration override. */
+    animation: status-mark-in 460ms cubic-bezier(0.34, 1.56, 0.64, 1) 70ms both;
+  }
+
+  .status[data-state='error'] [data-status-mark='error'] {
+    display: block;
+    color: var(--color-brand-red);
+  }
+
+  .status__text {
+    margin: 0;
+  }
+
+  .status__title {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .status[data-state='success'] .status__title {
+    color: var(--color-success);
+  }
+
+  .status[data-state='error'] .status__title {
+    color: var(--color-brand-red);
+  }
+
+  .status__body {
+    display: block;
+    margin-top: 0.1875rem;
+    color: var(--color-muted);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  @keyframes status-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes status-mark-in {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 </style>

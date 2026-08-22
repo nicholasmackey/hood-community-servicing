@@ -1,18 +1,13 @@
 ---
 import Logo from './Logo.astro';
-import { withBase } from '../utils/paths';
 
-// TODO: replace every value below with real HOOD contact details.
-const contact = {
-  phone: '(000) 000-0000',
-  phoneHref: 'tel:+10000000000',
-  email: 'email@placeholder.com',
-  website: 'hoodcommunityservicing.com',
-  websiteHref: withBase('/'),
-};
-
-const privacyHref = withBase('/privacy');
-
+/*
+ * No direct contact column. Hood are standing up a business line and have no
+ * published address to give out in the meantime, and a footer is the wrong
+ * place to guess: the form is the way in, and Contact is a row in the index
+ * below like every other section. Restore a column here when the number is
+ * live.
+ */
 const nav = [
   { label: 'Why HOOD', href: '#why-hood' },
   { label: 'Services', href: '#services' },
@@ -22,7 +17,7 @@ const nav = [
 
 const year = new Date().getFullYear();
 
-/* A clear charcoal step away from the near-black form above. */
+/* Brand red, closing the page against the white form above. */
 ---
 
 <footer class="footer text-white">
@@ -35,69 +30,47 @@ const year = new Date().getFullYear();
         <p class="mt-5 max-w-[34ch] text-[16px] font-medium">
           Staffing, pool management, and everyday community services
         </p>
-        <p class="mt-1 text-[16px] text-white/70">Serving DFW</p>
+        <p class="mt-1 text-[16px] text-white">Serving DFW</p>
       </div>
 
-      <div class="flex flex-col gap-10 sm:flex-row sm:gap-16">
-        <div>
-          <h2 class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70">
-            Contact
-          </h2>
-          <ul class="mt-4 space-y-2 text-[16px]">
-            <li>
-              <a href={contact.phoneHref} class="transition-colors hover:text-brand-red-soft">
-                {contact.phone}
-              </a>
-            </li>
-            <li>
-              <a href={`mailto:${contact.email}`} class="transition-colors hover:text-brand-red-soft">
-                {contact.email}
-              </a>
-            </li>
-            <li>
-              <a href={contact.websiteHref} class="transition-colors hover:text-brand-red-soft">
-                {contact.website}
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h2 class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/70">
-            Site
-          </h2>
-          <ul class="mt-4 space-y-2 text-[16px]">
-            {
-              nav.map((item) => (
-                <li>
-                  <a href={item.href} class="transition-colors hover:text-brand-red-soft">
-                    {item.label}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </div>
+      {/* One column left, so it lies down into two ranks of links on a phone
+          rather than running the height of the panel on its own. */}
+      <nav aria-label="Footer">
+        <h2 class="text-[13px] font-semibold uppercase tracking-[0.1em] text-white">
+          Site
+        </h2>
+        <ul
+          class="mt-4 grid grid-cols-2 gap-x-10 gap-y-2 text-[16px] sm:grid-cols-1 sm:gap-y-2"
+        >
+          {
+            nav.map((item) => (
+              <li>
+                <a href={item.href} class="transition-colors hover:text-ink">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
     </div>
 
-    <div
-      class="mt-10 flex flex-col gap-3 border-t border-white/15 pt-6 text-[14px] text-white/70 sm:flex-row sm:items-center sm:justify-between"
-    >
+    {/* No privacy link: there is no policy page to point it at, and a footer
+        link to a 404 is worse than no link. Add both together. */}
+    <div class="mt-10 border-t border-white/25 pt-6 text-[14px] text-white">
       <p>&copy; {year} HOOD Community Servicing, LLC. All rights reserved.</p>
-      <!-- TODO: point at the real privacy policy once it exists. -->
-      <a href={privacyHref} class="transition-colors hover:text-brand-red-soft">Privacy</a>
     </div>
   </div>
 </footer>
 
 <style>
+  /* No hairline: the footer meets the white form above, so the colour change
+     is the edge. */
   .footer {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background-color: #474440;
-    border-top: 1px solid rgb(255 255 255 / 0.1);
+    background-color: var(--color-brand-red);
   }
 
   .footer :global(.footer__watermark) {

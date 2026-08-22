@@ -20,6 +20,11 @@
   /* Lighter red reserved for small labels on the dark ground. */
   --color-brand-red-soft: #E6534E;
 
+  /* The one green on the site: the contact form's sent state, and nothing
+     else. Deep enough to clear 5:1 on white so the confirmation can carry
+     15px type, warm enough not to fight the red. */
+  --color-success: #157F3D;
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -82,10 +87,13 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Offset anchor targets so the sticky header never covers a heading. */
+  /* Offset anchor targets by exactly the sticky header's height, so a jump
+     lands the section's top edge flush against the underside of the bar. A
+     round 6rem here used to overshoot the 72/80px bar, which parked every
+     target a sliver low and left a band of the previous section on screen. */
   :target,
   [id] {
-    scroll-margin-top: 6rem;
+    scroll-margin-top: var(--header-h);
   }
 
   :focus-visible {
